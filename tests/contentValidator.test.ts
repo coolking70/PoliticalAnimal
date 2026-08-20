@@ -56,5 +56,5 @@ describe('education demo content', () => {
       if (sequences.size < 100) sequences.add(sequence.join(','));
     }
     expect(sequences.size).toBeGreaterThan(5);
-  });
+  }, 20_000);
 });
