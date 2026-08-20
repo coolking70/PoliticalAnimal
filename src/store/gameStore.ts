@@ -1,29 +1,48 @@
-import scenarioJson from '../../content/education-demo/scenario.json';
-import eventsJson from '../../content/education-demo/events/events.json';
-import type { Choice, GameEvent, GameSave, Scenario } from '../models/game';
+import type { Choice, GameSave, ResolvedGameEvent, ScenarioBundle, WorldState } from '../models/game';
 import { applyEffects } from '../engine/effectExecutor';
-import { eligibleEvents, selectEvent } from '../engine/eventSelector';
+import { eligibleEvents, scoreEvents, selectEvent } from '../engine/eventSelector';
 import { normalizeSeed } from '../engine/rng';
 import { addMemory } from '../engine/memoryEngine';
 import { advanceDebtPressure, applyDebtActions, createDebt } from '../engine/debtEngine';
 import { renderNarrativeTemplate } from '../engine/historyEngine';
 import { allConditionsMatch } from '../engine/conditionEvaluator';
+import { defaultScenarioId, getScenarioBundle } from '../content/scenarioRegistry';
 
-export const scenario = scenarioJson as Scenario;
-export const events = eventsJson as GameEvent[];
+export const scenario = getScenarioBundle(defaultScenarioId).scenario;
+export const events = getScenarioBundle(defaultScenarioId).events;
 
-export function createGame(seed: number): GameSave {
+function advancePhase(
+  bundle: ScenarioBundle,
+  state: WorldState,
+  completedEvents: string[],
+  memories: GameSave['memories'],
+  debts: GameSave['debts'],
+): WorldState {
+  const next = structuredClone(state);
+  for (let guard = 0; guard < bundle.scenario.phases.length; guard += 1) {
+    const currentIndex = bundle.scenario.phases.findIndex((phase) => phase.id === next.phase);
+    if (currentIndex < 0) throw new Error(`未知剧情阶段：${String(next.phase)}`);
+    if (eligibleEvents(bundle.events, next, completedEvents, memories, debts).length) return next;
+    if (currentIndex === bundle.scenario.phases.length - 1) return next;
+    next.phase = bundle.scenario.phases[currentIndex + 1].id;
+  }
+  return next;
+}
+
+export function createGame(seed: number, scenarioId = defaultScenarioId): GameSave {
+  const bundle = getScenarioBundle(scenarioId);
   const rngState = normalizeSeed(seed);
-  const selected = selectEvent(events, scenario.initialState, [], rngState);
+  const selected = selectEvent(bundle.events, bundle.scenario.initialState, [], rngState);
   if (!selected.event) throw new Error('场景没有合法的开场事件');
   return {
-    saveVersion: 2,
-    engineVersion: '0.2.0',
-    scenario: 'education_demo',
+    saveVersion: 3,
+    engineVersion: '0.3.0',
+    scenarioId,
+    status: 'playing',
     seed: normalizeSeed(seed),
     rngState: selected.rngState,
     turn: 0,
-    worldState: structuredClone(scenario.initialState),
+    worldState: structuredClone(bundle.scenario.initialState),
     history: [],
     memories: [],
     debts: [],
@@ -33,10 +52,12 @@ export function createGame(seed: number): GameSave {
 }
 
 export function choose(save: GameSave, choice: Choice): GameSave {
-  const current = events.find((event) => event.id === save.currentEventId);
+  if (save.status !== 'playing' || !save.currentEventId) throw new Error('本局已经结束');
+  const bundle = getScenarioBundle(save.scenarioId);
+  const current = bundle.events.find((event) => event.id === save.currentEventId);
   if (!current) throw new Error(`找不到当前事件：${save.currentEventId}`);
 
-  const worldState = applyEffects(save.worldState, choice.effects);
+  let worldState = applyEffects(save.worldState, choice.effects);
   let memories = save.memories;
   for (const [index, template] of (choice.memories ?? []).entries()) {
     memories = addMemory(memories, template, current.id, save.turn + 1, index);
@@ -53,33 +74,42 @@ export function choose(save: GameSave, choice: Choice): GameSave {
     choiceId: choice.id,
     choiceLabel: choice.label,
     response: choice.response,
+    threads: current.thread,
   }];
-  const selected = selectEvent(events, worldState, completedEvents, save.rngState, memories, debts);
-  if (!selected.event) throw new Error('剧情进入死路：没有合法事件');
+  const base = { ...save, turn: save.turn + 1, worldState, history, memories, debts, completedEvents };
+  if (current.type === 'ending') return { ...base, status: 'completed', currentEventId: null };
 
-  return {
-    ...save,
-    turn: save.turn + 1,
-    rngState: selected.rngState,
-    worldState,
-    history,
-    memories,
-    debts,
-    completedEvents,
-    currentEventId: selected.event.id,
-  };
+  worldState = advancePhase(bundle, worldState, completedEvents, memories, debts);
+  const selected = selectEvent(bundle.events, worldState, completedEvents, save.rngState, memories, debts, history);
+  if (!selected.event) throw new Error(`剧情在 ${String(worldState.phase)} 阶段进入死路：没有合法事件`);
+  return { ...base, rngState: selected.rngState, worldState, currentEventId: selected.event.id };
 }
 
-export function getCurrentEvent(save: GameSave): GameEvent {
-  const event = events.find((item) => item.id === save.currentEventId);
+export function getCurrentEvent(save: GameSave): ResolvedGameEvent | null {
+  if (!save.currentEventId) return null;
+  const bundle = getScenarioBundle(save.scenarioId);
+  const event = bundle.events.find((item) => item.id === save.currentEventId);
   if (!event) throw new Error(`事件 ${save.currentEventId} 不存在`);
+  const actor = bundle.actors.find((item) => item.id === event.actorId);
+  const institution = bundle.institutions.find((item) => item.id === event.institutionId);
+  if (!actor || !institution) throw new Error(`事件 ${event.id} 的角色或机构引用无效`);
   return {
     ...event,
+    actorName: actor.name,
+    actorEmoji: actor.emoji,
+    actorRole: actor.role,
+    institutionName: institution.name,
     scene: renderNarrativeTemplate(event.scene, save),
     choices: event.choices.filter((choice) => allConditionsMatch(choice.requirements, save.worldState, save.memories, save.debts)),
   };
 }
 
-export function getEligible(save: GameSave): GameEvent[] {
-  return eligibleEvents(events, save.worldState, save.completedEvents, save.memories, save.debts);
+export function getEligible(save: GameSave) {
+  const bundle = getScenarioBundle(save.scenarioId);
+  return eligibleEvents(bundle.events, save.worldState, save.completedEvents, save.memories, save.debts);
+}
+
+export function getWeightedCandidates(save: GameSave) {
+  const bundle = getScenarioBundle(save.scenarioId);
+  return scoreEvents(getEligible(save), save.worldState, save.memories, save.debts, save.history);
 }

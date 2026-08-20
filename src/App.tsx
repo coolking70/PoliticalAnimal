@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { GameSave } from './models/game';
-import { getCurrentEvent, getEligible, createGame, choose, scenario } from './store/gameStore';
+import { getCurrentEvent, getWeightedCandidates, createGame, choose, scenario } from './store/gameStore';
 import { loadFromStorage, saveToStorage } from './engine/saveEngine';
+import { getDebtPressureCap } from './engine/debtEngine';
 import './styles.css';
 
 type Tab = 'scene' | 'history' | 'archive' | 'settings' | 'debug';
@@ -31,7 +32,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('scene');
   const [notice, setNotice] = useState('');
   const current = game ? getCurrentEvent(game) : null;
-  const eligible = useMemo(() => game ? getEligible(game) : [], [game]);
+  const weightedCandidates = useMemo(() => game ? getWeightedCandidates(game) : [], [game]);
 
   const begin = (nextSeed = seed) => {
     setSeed(nextSeed);
@@ -42,10 +43,6 @@ export default function App() {
 
   const selectChoice = (choiceId: string) => {
     if (!game || !current) return;
-    if (current.id === 'E20') {
-      begin(seed);
-      return;
-    }
     const choice = current.choices.find((item) => item.id === choiceId);
     if (!choice) return;
     try {
@@ -108,10 +105,13 @@ export default function App() {
       mode: tab,
       turn: game.turn,
       seed: game.seed,
+      status: game.status,
+      phase: game.worldState.phase,
       event: current ? {
         id: current.id,
         title: current.title,
-        actor: current.actor,
+        actor: current.actorName,
+        institution: current.institutionName,
         scene: current.scene,
         choices: current.choices.map((choice, index) => ({ key: index + 1, id: choice.id, label: choice.label })),
       } : null,
@@ -120,10 +120,10 @@ export default function App() {
       historyCount: game.history.length,
       memories: game.memories.map((memory) => ({ id: memory.id, topic: memory.topic, statement: memory.statement, public: memory.public, importance: memory.importance, active: memory.active })),
       debts: game.debts.map((debt) => ({ id: debt.id, creditor: debt.creditor, topic: debt.topic, pressure: debt.pressure, status: debt.status })),
-      eligibleEvents: eligible.map((event) => event.id),
+      eligibleEvents: weightedCandidates.map((candidate) => ({ id: candidate.event.id, finalWeight: Number(candidate.finalWeight.toFixed(2)) })),
     } : { mode: 'menu', seed });
     window.advanceTime = () => undefined;
-  }, [game, current, tab, eligible, seed]);
+  }, [game, current, tab, weightedCandidates, seed]);
 
   return (
     <>
@@ -165,17 +165,20 @@ export default function App() {
                   {item.label}
                 </button>
               ))}
-              <div className="turn-card"><span>改革进程</span><strong>第 {game.turn + 1} 回合</strong></div>
+              <div className="turn-card"><span>{String(game.worldState.phase)}</span><strong>{game.status === 'completed' ? '本局已归档' : `第 ${game.turn + 1} 回合`}</strong></div>
             </nav>
 
             <section className="content-panel">
               {notice && <div className="notice">{notice}</div>}
+              {tab === 'scene' && game.status === 'completed' && (
+                <div className="menu-card completion-card"><div className="seal">📚</div><p className="eyebrow gold">SCENARIO COMPLETE</p><h2>本局已经进入历史</h2><p className="menu-copy">最终事件已正常结算，所有选择、记忆、债务与历史记录均保留在当前存档中。</p><button className="primary-button" onClick={() => begin(seed)}>使用相同 Seed 重新开始</button></div>
+              )}
               {tab === 'scene' && current && (
                 <div className="scene-view">
                   <div className="event-meta"><span>{current.type.toUpperCase()}</span><span>{current.thread.join(' / ')}</span><span>{current.id}</span></div>
                   <div className="speaker-block">
                     <div className="portrait" aria-hidden="true">{current.actorEmoji}</div>
-                    <div><p className="eyebrow">正在发言</p><h2>{current.actor}</h2></div>
+                    <div><p className="eyebrow">{current.institutionName} · {current.actorRole}</p><h2>{current.actorName}</h2></div>
                   </div>
                   <article className="dialogue-card">
                     <p className="event-number">议程 {String(game.turn + 1).padStart(2, '0')}</p>
@@ -203,19 +206,19 @@ export default function App() {
                 <div className="page-view archive-view"><p className="eyebrow gold">POLITICAL ARCHIVE</p><h2>政治档案</h2>
                   <div className="archive-summary"><article><span>政治记忆</span><strong>{game.memories.length}</strong></article><article><span>未结债务</span><strong>{game.debts.filter((debt) => debt.status === 'active').length}</strong></article><article><span>官方措辞</span><strong>{Array.isArray(game.worldState.official_terms) ? game.worldState.official_terms.length : 0}</strong></article></div>
                   <section className="archive-section"><h3>公开讲话与承诺</h3>{!game.memories.length ? <p className="empty">总统尚未留下可供未来引用的话。</p> : <div className="record-list">{[...game.memories].reverse().map((memory) => <article key={memory.id}><div><span>{memory.id} · 第 {memory.createdAtTurn} 回合</span><b>{memory.topic}</b></div><blockquote>“{memory.statement}”</blockquote><small>重要度 {memory.importance} · {memory.public ? '公开' : '内部'} · {memory.active ? '有效' : '失效'}</small></article>)}</div>}</section>
-                  <section className="archive-section"><h3>政治债务</h3>{!game.debts.length ? <p className="empty">目前没有机构承认政府欠了它什么。</p> : <div className="record-list debt-list">{[...game.debts].reverse().map((debt) => <article key={debt.id} className={`debt-${debt.status}`}><div><span>{debt.id} · {Array.isArray(debt.creditor) ? debt.creditor.join('、') : debt.creditor}</span><b>{debt.status}</b></div><p>{debt.description}</p><small>强度 {debt.strength} · 压力 {debt.pressure} · {debt.topic}</small></article>)}</div>}</section>
+                  <section className="archive-section"><h3>政治债务</h3>{!game.debts.length ? <p className="empty">目前没有机构承认政府欠了它什么。</p> : <div className="record-list debt-list">{[...game.debts].reverse().map((debt) => <article key={debt.id} className={`debt-${debt.status}`}><div><span>{debt.id} · {Array.isArray(debt.creditor) ? debt.creditor.join('、') : debt.creditor}</span><b>{debt.status}</b></div><p>{debt.description}</p><small>强度 {debt.strength} · 压力 {debt.pressure}/{getDebtPressureCap(debt)} · {debt.topic}</small></article>)}</div>}</section>
                 </div>
               )}
               {tab === 'settings' && (
                 <div className="page-view"><p className="eyebrow gold">SETTINGS</p><h2>设置</h2><div className="settings-row"><div><strong>全屏模式</strong><p>演说需要更大的舞台。</p></div><button className="secondary-button" onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()}>切换（F）</button></div><div className="settings-row"><div><strong>重新开始</strong><p>使用相同 Seed 重演另一种历史。</p></div><button className="secondary-button" onClick={() => begin(seed)}>新一届政府</button></div></div>
               )}
               {tab === 'debug' && (
-                <div className="page-view debug-view"><p className="eyebrow gold">ENGINE INSPECTOR</p><h2>Debug 面板</h2><div className="debug-grid"><section><h3>运行状态</h3><pre>{JSON.stringify({ turn: game.turn, seed: game.seed, rngState: game.rngState, currentEvent: game.currentEventId, eligibleEvents: eligible.map((event) => ({ id: event.id, priority: event.priority, weight: event.weight })), completedEvents: game.completedEvents }, null, 2)}</pre></section><section><h3>World State</h3><pre>{JSON.stringify(game.worldState, null, 2)}</pre></section><section><h3>Memories</h3><pre>{JSON.stringify(game.memories, null, 2)}</pre></section><section><h3>Debts</h3><pre>{JSON.stringify(game.debts, null, 2)}</pre></section></div></div>
+                <div className="page-view debug-view"><p className="eyebrow gold">ENGINE INSPECTOR</p><h2>Debug 面板</h2><div className="debug-grid"><section><h3>运行状态</h3><pre>{JSON.stringify({ status: game.status, phase: game.worldState.phase, turn: game.turn, scenarioId: game.scenarioId, seed: game.seed, rngState: game.rngState, currentEvent: game.currentEventId, completedEvents: game.completedEvents }, null, 2)}</pre></section><section><h3>候选事件权重</h3><pre>{JSON.stringify(weightedCandidates.map((candidate) => ({ id: candidate.event.id, base: candidate.baseWeight, priority: candidate.priorityBonus, debt: Number(candidate.debtBonus.toFixed(2)), memory: Number(candidate.memoryBonus.toFixed(2)), thread: candidate.threadBonus, urgency: Number(candidate.urgencyBonus.toFixed(2)), repetition: candidate.repetitionPenalty, final: Number(candidate.finalWeight.toFixed(2)) })), null, 2)}</pre></section><section><h3>World State</h3><pre>{JSON.stringify(game.worldState, null, 2)}</pre></section><section><h3>Memories</h3><pre>{JSON.stringify(game.memories, null, 2)}</pre></section><section><h3>Debts</h3><pre>{JSON.stringify(game.debts, null, 2)}</pre></section></div></div>
               )}
             </section>
           </main>
         )}
-        <footer><span>原型版本 0.2.0 · Stage 1</span><span>决定会结束，制度会留下。</span></footer>
+        <footer><span>原型版本 0.3.0 · Stage 1.1</span><span>决定会结束，制度会留下。</span></footer>
       </div>
     </>
   );

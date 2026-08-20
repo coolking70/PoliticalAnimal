@@ -16,6 +16,7 @@ h1 { font-size: 24px; letter-spacing: .18em; }
 .quiet-button:hover, .secondary-button:hover { border-color: #d5b76b; background: #d5b76b12; }
 .quiet-button:disabled { opacity: .35; cursor: not-allowed; }
 .menu-card { margin: auto; width: min(720px, 100%); text-align: center; padding: 55px 70px; background: #17251fe8; border: 1px solid #d8bb7255; box-shadow: 0 24px 80px #0000004d; position: relative; }
+.completion-card { margin-top: 70px; }
 .menu-card::before, .dialogue-card::before { content: ""; position: absolute; inset: 8px; border: 1px solid #d8bb7222; pointer-events: none; }
 .seal { font-size: 70px; filter: grayscale(.2); margin-bottom: 16px; }
 .menu-card h2 { font-size: clamp(26px, 5vw, 42px); margin: 8px 0 20px; }

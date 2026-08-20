@@ -36,6 +36,22 @@ export interface Choice {
   requirements?: Condition[];
 }
 
+export interface Actor {
+  id: string;
+  name: string;
+  species: string;
+  emoji: string;
+  role: string;
+  institutionId?: string;
+}
+
+export interface Institution {
+  id: string;
+  name: string;
+  mission: string;
+  institutional_interest: string;
+}
+
 export interface MemoryTemplate {
   speaker: string;
   topic: string;
@@ -84,10 +100,23 @@ export interface GameEvent {
   once: boolean;
   requirements?: Condition[];
   blockers?: Condition[];
-  actor: string;
-  actorEmoji: string;
+  phase: string;
+  actorId: string;
+  institutionId: string;
+  after?: string[];
+  afterAny?: string[];
+  debtTopics?: string[];
+  memoryTopics?: string[];
+  urgencyFields?: string[];
   scene: string;
   choices: Choice[];
+}
+
+export interface ResolvedGameEvent extends GameEvent {
+  actorName: string;
+  actorEmoji: string;
+  actorRole: string;
+  institutionName: string;
 }
 
 export interface HistoryEntry {
@@ -97,12 +126,14 @@ export interface HistoryEntry {
   choiceId: string;
   choiceLabel: string;
   response: string;
+  threads: string[];
 }
 
 export interface GameSave {
-  saveVersion: 2;
-  engineVersion: '0.2.0';
-  scenario: 'education_demo';
+  saveVersion: 3;
+  engineVersion: '0.3.0';
+  scenarioId: string;
+  status: 'playing' | 'completed';
   seed: number;
   rngState: number;
   turn: number;
@@ -111,7 +142,14 @@ export interface GameSave {
   memories: PoliticalMemory[];
   debts: PoliticalDebt[];
   completedEvents: string[];
-  currentEventId: string;
+  currentEventId: string | null;
+}
+
+export type StateValueType = 'number' | 'boolean' | 'string' | 'string[]';
+
+export interface ScenarioPhase {
+  id: string;
+  label: string;
 }
 
 export interface Scenario {
@@ -120,4 +158,25 @@ export interface Scenario {
   subtitle: string;
   opening: string;
   initialState: WorldState;
+  stateSchema: Record<string, StateValueType>;
+  phases: ScenarioPhase[];
+}
+
+export interface ScenarioBundle {
+  scenario: Scenario;
+  actors: Actor[];
+  institutions: Institution[];
+  events: GameEvent[];
+}
+
+export interface EventWeightBreakdown {
+  event: GameEvent;
+  baseWeight: number;
+  priorityBonus: number;
+  debtBonus: number;
+  memoryBonus: number;
+  threadBonus: number;
+  urgencyBonus: number;
+  repetitionPenalty: number;
+  finalWeight: number;
 }
