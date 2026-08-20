@@ -16,9 +16,16 @@ Original prompt: 请参考 Political_Animal_Game_Design_v0.1.md，进行项目�
 - 为 E01–E10 补充关键公开承诺与政治债务；录入 E11–E20，E17 通过 `{{memory:education_principle}}` 动态引用实际旧话，E19 选项按过去路线解锁。
 - 政治档案页改为实际 Memory/Debt 台账，Debug 与 render_game_to_text 同步暴露语义状态；添加旧话插值、债务结清、条件结局和存档迁移测试。
 - Stage 1 验证完成：13 项测试、10,000 局 Bot、E16 债务兑现、E17 动态旧话、政治档案与 E20 动态历史评价均通过 Playwright 和截图目视检查，控制台无错误。
+- Stage 1.1：事件调度加入 Debt / Memory / Thread / Urgency bonus 与 Repetition penalty，并输出完整权重明细。
+- Debt strength 参与压力上限、增长和有效强度；事件通过 debtTopics / memoryTopics 接入调度。
+- 以 mandate / design / implementation / backlash / reckoning / ending Phase 替代 story_step 串行控制，同阶段事件可按 Seed 改变顺序。
+- Actor / Institution 完全改为 ID 引用；新增 Scenario Registry、v3 通用存档和正式 playing/completed ending 状态。
+- Content Validator 覆盖未知/重复引用、状态字段拼写、依赖环、空阶段与 ending；GitHub Actions 执行 build/test/validate-content。
+- 第一轮 Stage 1.1 验证：17 项测试通过，10,000 Seed 全部完成 ending 且存在多种事件顺序。
+- Playwright 验证 Phase 候选权重 Debug、Actor/Institution 展示和正式 completed 结算页，状态与截图一致且控制台无错误。
+- Validator 再加入 actor/institution 归属一致性、condition/effect 类型规则与最终 ending phase 死路检查。
 
 ## TODO
 
-- 进入 Stage 2：实现 Newspaper / TV / Government Memo 等 Narrative Framing 模板。
-- 增加可访问性与更多内容 Linter 规则（未知 actor/institution、不可达事件图）。
+- 后续可增加可访问性与更精细的不可达事件图分析。
 - 为 Memory 冲突加入更严格的“同一语义主题相互矛盾”检测，而不只依赖事件作者标记。

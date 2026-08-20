@@ -1,60 +1,60 @@
 import { describe, expect, it } from 'vitest';
-import eventsJson from '../content/education-demo/events/events.json';
-import actorsJson from '../content/education-demo/actors.json';
-import institutionsJson from '../content/education-demo/institutions.json';
 import { choose, createGame, getCurrentEvent } from '../src/store/gameStore';
-import type { GameEvent } from '../src/models/game';
-
-const events = eventsJson as GameEvent[];
+import { defaultScenarioId, getScenarioBundle } from '../src/content/scenarioRegistry';
+import { validateScenarioBundle } from '../src/content/contentValidator';
 
 describe('education demo content', () => {
-  it('has unique ids and valid structural references', () => {
-    const ids = events.map((event) => event.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(actorsJson.length).toBeGreaterThanOrEqual(6);
-    expect(institutionsJson.length).toBeGreaterThanOrEqual(5);
-    for (const event of events) {
-      expect(event.id).toMatch(/^(E\d{2}|S0_END)$/);
-      expect(event.title.length).toBeGreaterThan(0);
-      expect(event.scene.length).toBeGreaterThan(20);
-      expect(event.choices.length).toBeGreaterThan(0);
-      expect(event.weight).toBeGreaterThan(0);
-      for (const choice of event.choices) {
-        expect(choice.effects.length).toBeGreaterThan(0);
-        for (const effect of choice.effects) {
-          expect(['set', 'increment', 'decrement', 'push']).toContain(effect.operation);
-        }
-        for (const memory of choice.memories ?? []) {
-          expect(memory.topic.length).toBeGreaterThan(0);
-          expect(memory.statement.length).toBeGreaterThan(5);
-          expect(memory.importance).toBeGreaterThan(0);
-        }
-        for (const debt of choice.debts ?? []) {
-          expect(debt.topic.length).toBeGreaterThan(0);
-          expect(debt.pressure).toBeGreaterThan(0);
-        }
-      }
-    }
+  it('passes actor, institution, state field, dependency, and ending validation', () => {
+    expect(validateScenarioBundle(getScenarioBundle(defaultScenarioId))).toEqual([]);
   });
 
-  it('contains the first ten specified core events', () => {
+  it('reports unknown ids, misspelled fields, and duplicate references', () => {
+    const broken = structuredClone(getScenarioBundle(defaultScenarioId));
+    broken.events[0].actorId = 'missing_actor';
+    broken.events[0].after = ['E02', 'E02'];
+    broken.events[0].choices[0].effects.push({ field: 'teacher_unrst', operation: 'increment', value: 1 });
+    const codes = validateScenarioBundle(broken).map((issue) => issue.code);
+    expect(codes).toContain('unknown_actor');
+    expect(codes).toContain('duplicate_event_reference');
+    expect(codes).toContain('unknown_effect_field');
+  });
+
+  it('reports actor/institution mismatches and invalid effect types', () => {
+    const broken = structuredClone(getScenarioBundle(defaultScenarioId));
+    broken.events[1].institutionId = 'ministry_finance';
+    broken.events[1].choices[0].effects.push({ field: 'official_terms', operation: 'increment', value: 1 });
+    const codes = validateScenarioBundle(broken).map((issue) => issue.code);
+    expect(codes).toContain('actor_institution_mismatch');
+    expect(codes).toContain('invalid_numeric_effect');
+  });
+
+  it('contains E01–E20 and a formal ending', () => {
+    const events = getScenarioBundle(defaultScenarioId).events;
     for (let index = 1; index <= 20; index += 1) {
       expect(events.some((event) => event.id === `E${String(index).padStart(2, '0')}`)).toBe(true);
     }
+    expect(events.some((event) => event.type === 'ending')).toBe(true);
   });
 
-  it('10,000 seeded bots always reach the Stage 1 ending without loops or dead ends', () => {
+  it('10,000 seeded bots reach a completed ending with varied event order', () => {
+    const sequences = new Set<string>();
     for (let seed = 1; seed <= 10_000; seed += 1) {
       let game = createGame(seed);
       let steps = 0;
-      while (game.currentEventId !== 'E20' && steps < 30) {
+      const sequence: string[] = [];
+      while (game.status === 'playing' && steps < 50) {
         const event = getCurrentEvent(game);
-        const choice = event.choices[(seed + steps * 7) % event.choices.length];
+        expect(event, `seed ${seed} has no current event`).not.toBeNull();
+        sequence.push(event!.id);
+        const choice = event!.choices[(seed + steps * 7) % event!.choices.length];
         game = choose(game, choice);
         steps += 1;
       }
-      expect(game.currentEventId, `seed ${seed} dead-ended`).toBe('E20');
-      expect(steps, `seed ${seed} looped`).toBeLessThan(30);
+      expect(game.status, `seed ${seed} dead-ended`).toBe('completed');
+      expect(game.completedEvents.some((id) => id === 'E20')).toBe(true);
+      expect(steps, `seed ${seed} looped`).toBeLessThan(50);
+      if (sequences.size < 100) sequences.add(sequence.join(','));
     }
-  });
+    expect(sequences.size).toBeGreaterThan(5);
+  }, 20_000);
 });

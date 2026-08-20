@@ -1,6 +1,6 @@
 # Political Animal / 政治动物
 
-基于《Political Animal》v0.1 设计文档开发的 Stage 1 浏览器原型。当前垂直切片为“狐狸共和国：伟大的教育改革”。
+基于《Political Animal》v0.1 设计文档开发的 Stage 1.1 浏览器原型。当前垂直切片为“狐狸共和国：伟大的教育改革”。
 
 ## 已实现
 
@@ -9,13 +9,20 @@
 - 结构化 Condition 与 Effect（无 `eval`），条件可查询 World / Memory / Debt
 - Seed RNG、事件筛选、优先级与 `once` 去重
 - Political Memory、Political Debt、压力增长、兑现与违约
+- Debt `strength` 决定压力上限、增长速度和有效调度强度
+- 可解释的事件权重：priority、debt、memory、thread、urgency 与 repetition
+- Phase 事件池，同一阶段内的教师、学生、媒体、宗教事件按 Seed 加权调度
 - E01–E20 教育改革事件与动态历史评价
 - E17 自动引用玩家实际选择产生的总统旧话
 - E19 根据标准化、地方自治与专家权力动态开放终局方案
 - 主场景、历史、政治档案、设置、Debug 页面
-- v2 本地存档/读取、v1 存档迁移、同 Seed 可复现
+- Scenario Registry / Loader，运行时不写死教育剧本 ID
+- Actor / Institution ID 引用与集中内容资料
+- 正式 `playing / completed` 状态和可正常结算的 ending
+- v3 本地存档/读取、旧存档迁移、同 Seed 可复现
 - `render_game_to_text()` 与 `advanceTime(ms)` 自动测试接口
-- Vitest 单元测试、内容校验、10,000 局无死路模拟
+- Content Validator：引用、字段、依赖环、空阶段与 ending 校验
+- Vitest 单元测试、10,000 局无死路模拟、GitHub Actions CI
 
 ## 本地运行
 
@@ -44,10 +51,11 @@ npm run validate-content
 ```text
 content/education-demo/  剧本 JSON，独立于引擎
 src/engine/              条件、效果、事件选择、RNG、存档
+src/content/             Scenario Registry 与内容校验器
 src/models/              数据类型
 src/store/               场景运行状态与推进接口
 src/                     React 界面
 tests/                   引擎与内容测试
 ```
 
-下一阶段建议进入 Stage 2：加入报纸、政府文件、电视等 Narrative Framing 模板，让同一事实以政府、反对派、媒体和机构的不同叙述出现；同时加强内容 Linter 的 actor/institution 引用与事件可达性检查。
+Stage 1.1 的目标是先保证反应式叙事闭环稳定；当前版本不包含 Stage 2 的 Newspaper / TV / Memo 表现层扩展。

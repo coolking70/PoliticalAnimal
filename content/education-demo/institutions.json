@@ -1,7 +1,12 @@
 [
+  { "id": "presidency", "name": "总统府", "mission": "把竞选承诺变成国家行动", "institutional_interest": "维持政策权威与政治叙事" },
   { "id": "ministry_education", "name": "教育部", "mission": "培养独立思考", "institutional_interest": "证明改革可以被管理" },
   { "id": "ministry_finance", "name": "财政部", "mission": "为国家愿望寻找预算科目", "institutional_interest": "控制永久性支出" },
   { "id": "statistics_office", "name": "国家统计局", "mission": "将国家现状转换成可报告的数据", "institutional_interest": "确保任何政策都有指标" },
+  { "id": "teachers_union", "name": "教师工会", "mission": "维护教师职业条件", "institutional_interest": "降低行政负担并兑现人员支持" },
+  { "id": "student_union", "name": "全国学生联合会", "mission": "代表学生参与教育改革", "institutional_interest": "扩大校园自治与公共表达空间" },
   { "id": "religious_council", "name": "宗教委员会", "mission": "守护传统", "institutional_interest": "确保独立思考有正确方向" },
-  { "id": "local_governments", "name": "地方政府联合会", "mission": "执行中央政策", "institutional_interest": "尽可能把政策变成建设项目" }
+  { "id": "local_governments", "name": "地方政府联合会", "mission": "执行中央政策", "institutional_interest": "尽可能把政策变成建设项目" },
+  { "id": "national_media", "name": "共和国媒体联合会", "mission": "解释每天发生的国家事实", "institutional_interest": "把矛盾转化为可传播的叙事" },
+  { "id": "national_archives", "name": "国家档案与教材委员会", "mission": "为历史提供稳定解释", "institutional_interest": "把偶然决策整理成长期战略" }
 ]

@@ -1,9 +1,17 @@
 [
-  { "id": "president", "name": "总统阁下", "species": "fox", "emoji": "🦊", "role": "狐狸共和国总统" },
-  { "id": "minister_owl", "name": "奥维尔·夜羽", "species": "owl", "emoji": "🦉", "role": "教育部长" },
-  { "id": "minister_hamster", "name": "赫克托·满颊", "species": "hamster", "emoji": "🐹", "role": "财政部长" },
-  { "id": "statistics_office", "name": "国家统计局代表", "species": "cat", "emoji": "🐈", "role": "首席指标设计师" },
-  { "id": "teacher", "name": "教师工会代表", "species": "goat", "emoji": "🐐", "role": "一线教师" },
-  { "id": "religious_leader", "name": "牧首温顺三世", "species": "sheep", "emoji": "🐑", "role": "宗教委员会领袖" },
-  { "id": "governor_beaver", "name": "巴克·固坝", "species": "beaver", "emoji": "🦫", "role": "地方政府联合会主席" }
+  { "id": "president", "name": "总统阁下", "species": "fox", "emoji": "🦊", "role": "狐狸共和国总统", "institutionId": "presidency" },
+  { "id": "minister_owl", "name": "奥维尔·夜羽", "species": "owl", "emoji": "🦉", "role": "教育部长", "institutionId": "ministry_education" },
+  { "id": "minister_hamster", "name": "赫克托·满颊", "species": "hamster", "emoji": "🐹", "role": "财政部长", "institutionId": "ministry_finance" },
+  { "id": "statistics_officer", "name": "国家统计局代表", "species": "cat", "emoji": "🐈", "role": "首席指标设计师", "institutionId": "statistics_office" },
+  { "id": "teacher_representative", "name": "教师工会代表", "species": "goat", "emoji": "🐐", "role": "一线教师", "institutionId": "teachers_union" },
+  { "id": "religious_leader", "name": "牧首温顺三世", "species": "sheep", "emoji": "🐑", "role": "宗教委员会领袖", "institutionId": "religious_council" },
+  { "id": "governor_beaver", "name": "巴克·固坝", "species": "beaver", "emoji": "🦫", "role": "地方政府联合会主席", "institutionId": "local_governments" },
+  { "id": "fox_daily", "name": "《狐狸日报》", "species": "fox", "emoji": "📰", "role": "全国性报纸", "institutionId": "national_media" },
+  { "id": "student_leader", "name": "瑞拉快耳", "species": "rabbit", "emoji": "🐇", "role": "学生领袖", "institutionId": "student_union" },
+  { "id": "security_adviser", "name": "总统安全顾问", "species": "dog", "emoji": "🐕", "role": "秩序事务顾问", "institutionId": "presidency" },
+  { "id": "fox_reporter", "name": "《狐狸日报》记者", "species": "fox", "emoji": "🦊", "role": "政治记者", "institutionId": "national_media" },
+  { "id": "education_inspector", "name": "教育督察", "species": "raccoon", "emoji": "🦝", "role": "学校合规督察", "institutionId": "ministry_education" },
+  { "id": "evening_news", "name": "共和国晚间新闻", "species": "owl", "emoji": "📺", "role": "电视新闻主播", "institutionId": "national_media" },
+  { "id": "cabinet", "name": "总统内阁", "species": "fox", "emoji": "🏛️", "role": "共和国最高行政会议", "institutionId": "presidency" },
+  { "id": "historian", "name": "共和国历 39 年版历史教科书", "species": "owl", "emoji": "📖", "role": "官方历史编纂者", "institutionId": "national_archives" }
 ]

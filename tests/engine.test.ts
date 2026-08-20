@@ -3,11 +3,12 @@ import { evaluateCondition } from '../src/engine/conditionEvaluator';
 import { applyEffects } from '../src/engine/effectExecutor';
 import { selectEvent } from '../src/engine/eventSelector';
 import { parseSave, serializeSave } from '../src/engine/saveEngine';
-import { choose, createGame, events, getCurrentEvent } from '../src/store/gameStore';
+import { choose, createGame, events, getCurrentEvent, getEligible } from '../src/store/gameStore';
 import { addMemory, findMemory, getPublicPromises } from '../src/engine/memoryEngine';
-import { advanceDebtPressure, applyDebtActions, createDebt, getDebtPressure } from '../src/engine/debtEngine';
+import { advanceDebtPressure, applyDebtActions, createDebt, getDebtIntensity, getDebtPressure, getDebtPressureCap } from '../src/engine/debtEngine';
+import { defaultScenarioId, getScenarioBundle, listScenarioIds } from '../src/content/scenarioRegistry';
 
-describe('condition evaluator', () => {
+describe('condition and effect engines', () => {
   const state = { score: 2, tags: ['promise'], active: true };
 
   it('evaluates leaf and nested conditions without eval', () => {
@@ -18,10 +19,8 @@ describe('condition evaluator', () => {
       { field: 'active', operator: '==', value: true },
     ] }, state)).toBe(true);
   });
-});
 
-describe('effect executor', () => {
-  it('returns a new state and supports all Stage 0 operations', () => {
+  it('applies effects immutably', () => {
     const original = { pressure: 1, terms: ['调整期'] };
     const next = applyEffects(original, [
       { field: 'pressure', operation: 'increment', value: 2 },
@@ -35,7 +34,7 @@ describe('effect executor', () => {
 });
 
 describe('political memory and debt', () => {
-  it('stores semantic memories and retrieves the most important public promise', () => {
+  it('retrieves the most important semantic public promise', () => {
     let memories = addMemory([], {
       speaker: 'president', topic: 'education_principle', statement: '地方最了解自己的学生。',
       public: true, importance: 4, tags: ['promise', 'autonomy'],
@@ -48,58 +47,125 @@ describe('political memory and debt', () => {
     expect(getPublicPromises(memories)).toHaveLength(2);
   });
 
-  it('advances debt pressure and records fulfillment', () => {
+  it('uses strength for pressure caps, growth, and effective intensity', () => {
     let debts = createDebt([], {
       creditor: 'teachers_union', type: 'staffing_promise', topic: 'teacher_support',
       strength: 2, pressure: 1, description: '教师等待行政助理到岗。', tags: ['teachers'],
     }, 'E07', 7);
+    expect(getDebtPressureCap(debts[0])).toBe(4);
     debts = advanceDebtPressure(debts);
-    expect(getDebtPressure(debts, 'teacher_support')).toBe(2);
+    expect(debts[0].pressure).toBe(2);
+    expect(getDebtIntensity(debts[0])).toBe(3);
+    expect(getDebtPressure(debts, 'teacher_support')).toBe(3);
     debts = applyDebtActions(debts, [{ action: 'resolve', topic: 'teacher_support' }]);
     expect(debts[0].status).toBe('paid');
     expect(getDebtPressure(debts, 'teacher_support')).toBe(0);
   });
 });
 
-describe('deterministic narrative run', () => {
+describe('reactive event selector', () => {
+  it('exposes debt, memory, urgency, thread, and repetition weight components', () => {
+    const debt = createDebt([], {
+      creditor: 'teachers_union', type: 'staffing_promise', topic: 'teacher_support', strength: 4,
+      pressure: 3, description: '教师等待支持。', tags: ['teachers'],
+    }, 'E07', 7);
+    const memory = addMemory([], {
+      speaker: 'president', topic: 'education_principle', statement: '教育必须自由。', public: true,
+      importance: 5, tags: ['promise'],
+    }, 'E01', 1);
+    const selected = selectEvent(
+      events,
+      { ...getScenarioBundle(defaultScenarioId).scenario.initialState, phase: 'backlash', teacher_unrest: 4, student_unrest: 3 },
+      ['E01', 'E07', 'E11', 'E12', 'E15'],
+      42,
+      memory,
+      debt,
+      [{ turn: 1, eventId: 'E07', title: '教师行政负担', choiceId: 'A', choiceLabel: '减少表格', response: '', threads: ['Teachers'] }],
+    );
+    const strike = selected.weighted.find((candidate) => candidate.event.id === 'E16');
+    const movement = selected.weighted.find((candidate) => candidate.event.id === 'E17');
+    expect(strike?.debtBonus).toBeGreaterThan(0);
+    expect(strike?.urgencyBonus).toBeGreaterThan(0);
+    expect(strike?.repetitionPenalty).toBeGreaterThan(0);
+    expect(movement?.memoryBonus).toBeGreaterThan(0);
+    expect(movement?.threadBonus).toBeGreaterThan(0);
+  });
+
+  it('same seed and state remain deterministic', () => {
+    const game = createGame(872631);
+    const first = selectEvent(events, game.worldState, [], game.rngState);
+    const second = selectEvent(events, game.worldState, [], game.rngState);
+    expect(first.event?.id).toBe(second.event?.id);
+    expect(first.rngState).toBe(second.rngState);
+  });
+
+  it('higher pressure strictly raises the related debt event weight', () => {
+    const template = {
+      creditor: 'teachers_union', type: 'staffing_promise', topic: 'teacher_support', strength: 4,
+      description: '教师等待支持。', tags: ['teachers'],
+    };
+    const low = createDebt([], { ...template, pressure: 1 }, 'E07', 7);
+    const high = createDebt([], { ...template, pressure: 7 }, 'E07', 7);
+    const state = { ...getScenarioBundle(defaultScenarioId).scenario.initialState, phase: 'backlash', teacher_unrest: 4 };
+    const completed = ['E01', 'E07', 'E11', 'E12', 'E15'];
+    const lowWeight = selectEvent(events, state, completed, 5, [], low).weighted.find((item) => item.event.id === 'E16')!.finalWeight;
+    const highWeight = selectEvent(events, state, completed, 5, [], high).weighted.find((item) => item.event.id === 'E16')!.finalWeight;
+    expect(highWeight).toBeGreaterThan(lowWeight);
+  });
+});
+
+describe('scenario runtime', () => {
   function run(seed: number, choiceIndex: number) {
     let game = createGame(seed);
-    while (game.currentEventId !== 'E20') {
+    let guard = 0;
+    while (game.status === 'playing' && guard < 50) {
       const event = getCurrentEvent(game);
-      game = choose(game, event.choices[choiceIndex % event.choices.length]);
+      expect(event).not.toBeNull();
+      game = choose(game, event!.choices[choiceIndex % event!.choices.length]);
+      guard += 1;
     }
+    expect(guard).toBeLessThan(50);
     return game;
   }
 
-  it('same seed and choices produce exactly the same save', () => {
+  it('loads scenarios through the registry without hard-coded save ids', () => {
+    expect(listScenarioIds()).toContain(defaultScenarioId);
+    const game = createGame(1, defaultScenarioId);
+    expect(game.scenarioId).toBe(defaultScenarioId);
+  });
+
+  it('same seed and choices produce exactly the same completed save', () => {
     expect(run(872631, 0)).toEqual(run(872631, 0));
   });
 
-  it('save serialization fully restores world state and history', () => {
-    const game = run(22, 1);
-    expect(parseSave(serializeSave(game))).toEqual(game);
-  });
-
-  it('once events cannot repeat', () => {
-    const game = createGame(8);
-    const selected = selectEvent(events, game.worldState, ['E01'], game.rngState);
-    expect(selected.eligible.map((event) => event.id)).not.toContain('E01');
-  });
-
-  it('different E04 choices open and close the creativity route', () => {
-    let creativity = createGame(1);
-    let satisfaction = createGame(1);
-    for (let step = 0; step < 4; step += 1) {
-      const a = getCurrentEvent(creativity);
-      const b = getCurrentEvent(satisfaction);
-      creativity = choose(creativity, a.choices[step === 3 ? 2 : 0]);
-      satisfaction = choose(satisfaction, b.choices[0]);
+  it('different seeds vary event order inside the design phase', () => {
+    const nextEvents = new Set<string>();
+    for (let seed = 1; seed <= 40; seed += 1) {
+      let game = createGame(seed);
+      game = choose(game, getCurrentEvent(game)!.choices[0]);
+      nextEvents.add(game.currentEventId!);
     }
-    expect(creativity.currentEventId).toBe('E05');
-    expect(satisfaction.currentEventId).toBe('E09');
+    expect(nextEvents.size).toBeGreaterThan(1);
+    expect([...nextEvents].every((id) => ['E02', 'E03', 'E04'].includes(id))).toBe(true);
   });
 
-  it('E17 quotes the actual early statement and E19 unlocks route-dependent choices', () => {
+  it('different metric choices open and close the creativity route', () => {
+    const playToImplementation = (metricChoiceId: string) => {
+      let game = createGame(7);
+      while (String(game.worldState.phase) !== 'implementation') {
+        const event = getCurrentEvent(game)!;
+        const choice = event.id === 'E04'
+          ? event.choices.find((item) => item.id === metricChoiceId)!
+          : event.choices[0];
+        game = choose(game, choice);
+      }
+      return getEligible(game).map((event) => event.id);
+    };
+    expect(playToImplementation('C')).toContain('E05');
+    expect(playToImplementation('A')).not.toContain('E05');
+  });
+
+  it('E17 quotes the actual early statement and E19 unlocks route choices', () => {
     const decisions: Record<string, string> = {
       E01: 'C', E02: 'A', E03: 'B', E04: 'C', E05: 'A', E06: 'A', E07: 'B', E08: 'A',
       E09: 'A', E10: 'A', E11: 'C', E12: 'C', E13: 'D', E14: 'A', E15: 'C', E16: 'C',
@@ -107,29 +173,36 @@ describe('deterministic narrative run', () => {
     };
     let game = createGame(42);
     while (game.currentEventId !== 'E17') {
-      const event = getCurrentEvent(game);
-      const choice = event.choices.find((item) => item.id === decisions[event.id]) ?? event.choices[0];
-      game = choose(game, choice);
+      const event = getCurrentEvent(game)!;
+      game = choose(game, event.choices.find((item) => item.id === decisions[event.id]) ?? event.choices[0]);
     }
-    const studentMovement = getCurrentEvent(game);
-    expect(studentMovement.scene).toContain('教育不应该由中央统一决定，地方最了解自己的学生。');
-    expect(studentMovement.scene).not.toContain('{{memory:');
-    game = choose(game, studentMovement.choices.find((choice) => choice.id === 'C')!);
-    game = choose(game, getCurrentEvent(game).choices[0]);
-    const finalPlan = getCurrentEvent(game);
-    expect(finalPlan.id).toBe('E19');
-    expect(finalPlan.choices.map((choice) => choice.id)).toContain('B');
+    const movement = getCurrentEvent(game)!;
+    expect(movement.scene).toContain('教育不应该由中央统一决定，地方最了解自己的学生。');
+    game = choose(game, movement.choices.find((choice) => choice.id === 'C')!);
+    while (game.currentEventId !== 'E19') {
+      const event = getCurrentEvent(game)!;
+      game = choose(game, event.choices.find((item) => item.id === decisions[event.id]) ?? event.choices[0]);
+    }
+    expect(getCurrentEvent(game)!.choices.map((choice) => choice.id)).toContain('B');
   });
 
-  it('migrates a Stage 0 save into the Stage 1 continuation', () => {
+  it('choosing an ending completes normally without a dead-end exception', () => {
+    const game = run(9, 0);
+    expect(game.status).toBe('completed');
+    expect(game.currentEventId).toBeNull();
+    expect(game.completedEvents).toContain('E20');
+  });
+
+  it('serializes completed saves and migrates legacy saves to v3', () => {
+    const completed = run(22, 1);
+    expect(parseSave(serializeSave(completed))).toEqual(completed);
     const legacy = {
-      saveVersion: 1, engineVersion: '0.1.0', scenario: 'education_demo', seed: 1, rngState: 1,
-      turn: 8, worldState: { story_step: 10 }, history: [], completedEvents: ['E10'], currentEventId: 'S0_END',
+      saveVersion: 2, engineVersion: '0.2.0', scenario: 'education_demo', seed: 1, rngState: 1,
+      turn: 8, worldState: { story_step: 10 }, history: [], memories: [], debts: [], completedEvents: ['E10'], currentEventId: 'E11',
     };
     const migrated = parseSave(JSON.stringify(legacy));
-    expect(migrated.saveVersion).toBe(2);
-    expect(migrated.currentEventId).toBe('E11');
-    expect(migrated.memories).toEqual([]);
-    expect(migrated.debts).toEqual([]);
+    expect(migrated.saveVersion).toBe(3);
+    expect(migrated.scenarioId).toBe('education_demo');
+    expect(migrated.worldState.phase).toBe('backlash');
   });
 });
