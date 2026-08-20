@@ -1,0 +1,58 @@
+[
+  {
+    "id": "PF-P01-GOV", "eventId": "P01", "type": "government_memo", "stance": "government", "source": { "institutionId": "fox_foreign_ministry" },
+    "eyebrow": "外海应急通报·第 01 号", "title": "关于两艘渔船暂未按计划返航的情况说明", "body": "部长已指示“{{choice:label}}”。目前被扣渔船数量为 {{state:detained_boats}}，局势尚未升级到需要在本文件中使用‘升级’一词的程度。", "footer": "本通报不影响未来对小岛是否存在的法律解释。"
+  },
+  {
+    "id": "PF-P01-PRESS", "eventId": "P01", "type": "newspaper", "stance": "media", "source": { "label": "《狐狸共和报》" },
+    "eyebrow": "海峡·号外", "title": "两艘渔船被扣，无人小岛突然获得全国关心", "body": "企鹅海上共和国以渔业执法为由扣船。外交部的回应是“{{choice:response}}”。议会议员已要求政府说明，一块平时没人去的石头究竟值得多少舰船去。", "footer": "本报海图由美术部依爱国比例绘制。"
+  },
+  {
+    "id": "PF-P02-WORDING", "eventId": "P02", "type": "government_memo", "stance": "government", "source": { "institutionId": "fox_foreign_ministry" },
+    "eyebrow": "统一对外口径", "title": "自即日起统称“{{official_terms:last}}”", "body": "各机关、海军及政府友好评论员在谈及北矶岛事件时，应使用“{{official_terms:last}}”。任何更严重的用词均属个人判断，任何更轻的用词均属对方宣传。", "footer": "官方措辞可随局势保持一贯地调整。"
+  },
+  {
+    "id": "PF-P02-PENGUIN", "eventId": "P02", "type": "newspaper", "stance": "opposition", "source": { "label": "《企鹅海上日报》" },
+    "eyebrow": "南方邻国观察", "title": "狐狸政府再次为常规执法发明新名称", "body": "狐狸共和国将我国在历史水域的正常渔业管理称为“{{official_terms:last}}”。本报地理专家指出，对方措辞的长度与其法律依据的强度呈反比。", "footer": "本报对所有历史水域拥有历史性理解。"
+  },
+  {
+    "id": "PF-P03-NAVY", "eventId": "P03", "type": "internal_memo", "stance": "institution", "source": { "institutionId": "fox_navy" },
+    "eyebrow": "海军内部·行动准备摘要", "title": "巡航授权与外交背书对照表", "body": "文官决定：{{choice:label}}。当前巡航授权：{{state:patrol_authorized}}；海军姿态指数：{{state:naval_posture}}。如外交部后续重新定义任务，请确保新定义不短于舰船转弯半径。", "footer": "政治债务状态：{{debt:naval_backing:status}}。"
+  },
+  {
+    "id": "PF-P04-TV", "eventId": "P04", "type": "tv_news", "stance": "media", "source": { "actorId": "anchor_fox" },
+    "eyebrow": "LIVE 港口特别报道", "title": "空船位驶入首都，渔民要求政府说明谁在船上", "body": "渔民协会就被扣船只发起抗议。外交部选择“{{choice:label}}”。协会表示，如果政府的承诺不能在海上浮起来，它至少应该能在议会前停泊。", "footer": "画面中的鸣笛已做静音处理，以便收听评论员的愤怒。"
+  },
+  {
+    "id": "PF-P07-REDLINE", "eventId": "P07", "type": "newspaper", "stance": "media", "source": { "label": "《狐狸共和报》" },
+    "eyebrow": "外交·头版", "title": "外交部长终于公布红线，全国开始等待有人跨过", "body": "部长公开表示：“{{memory:red_line}}”海军已收到说明，市场已收到风险，对方已收到一个可以精确接近的坐标。", "footer": "本报将实时更新红线与现实的相对位置。"
+  },
+  {
+    "id": "PF-P08-PENGUIN-TV", "eventId": "P08", "type": "tv_news", "stance": "opposition", "source": { "actorId": "commodore_penguin" },
+    "eyebrow": "企鹅海上公共电视台", "title": "岸防舰完成常规航行，邻国雷达出现不必要的情绪", "body": "我国舰艇今日在北矶岛历史水域完成巡逻。狐狸方采取“{{choice:label}}”的反应。发言人强调，如果对方把正常航行当作红线测试，这只证明对方的红线需要更好的航标。", "footer": "接下来请看冰层消融对历史水域面积的积极影响。"
+  },
+  {
+    "id": "PF-P08-WORLD", "eventId": "P08", "type": "newspaper", "stance": "foreign_observer", "source": { "institutionId": "world_observers" },
+    "eyebrow": "国际海洋观察", "title": "一艘船穿过两国同时声称不存在的模糊区域", "body": "企鹅舰艇航行路线在企鹅地图上完全合法，在狐狸地图上完全不可接受，在卫星图上则只是一条很小的船。狐狸政府的实际选择为“{{choice:label}}”。", "footer": "本网站不对地图颜色主权主张负责。"
+  },
+  {
+    "id": "PF-P09-BRIEF", "eventId": "P09", "type": "internal_memo", "stance": "institution", "source": { "institutionId": "fox_navy" },
+    "eyebrow": "军政协调会议纪要", "title": "红线兑现状态评估", "body": "外交部处置：{{choice:response}}公开红线为“{{memory:red_line}}”，当前系统记录的兑现状态为 {{state:red_line_honored}}，海军相关政治债务状态为 {{debt:naval_backing:status}}。", "footer": "如记录与公开口径不一致，以能在议会宣读的版本为准。"
+  },
+  {
+    "id": "PF-P11-LEAK", "eventId": "P11", "type": "newspaper", "stance": "foreign_observer", "source": { "label": "《海外信天翁日报》" },
+    "eyebrow": "独家·泄露电报", "title": "内部文件显示双方都不想开战，局势因此更加危险", "body": "泄露电报称，两国政府的私下判断高度一致，公开措辞也因此必须高度不一致。外交部对泄密的回应为“{{choice:label}}”。", "footer": "本报已删除文件中会危及消息来源的部分，并保留了会危及政府面子的部分。"
+  },
+  {
+    "id": "PF-P15-ACCORD", "eventId": "P15", "type": "government_memo", "stance": "government", "source": { "institutionId": "fox_foreign_ministry" },
+    "eyebrow": "协议签署后说明", "title": "关于“{{official_terms:last}}”阶段性结束的公报", "body": "双方已达成“{{choice:label}}”安排。该安排不影响主权主张，不构成法律先例，不承认任何一方曾经需要让步，并将实际改变舰船和渔民的位置。", "footer": "协议类型：{{state:agreement_type}}。"
+  },
+  {
+    "id": "PF-P15-PENGUIN", "eventId": "P15", "type": "newspaper", "stance": "opposition", "source": { "label": "《企鹅海上日报》" },
+    "eyebrow": "胜利·即时分析", "title": "狐狸方接受现实，双方危机以我方理性胜利结束", "body": "双方签署了一份在狐狸文本中名为“{{choice:label}}”的安排。我方专家认为，文件中没有任何字眼否定企鹅共和国取得了完全胜利。", "footer": "对方同样宣布胜利的行为被视为对我方胜利的间接确认。"
+  },
+  {
+    "id": "PF-P16-TV", "eventId": "P16", "type": "tv_news", "stance": "government", "source": { "actorId": "anchor_fox" },
+    "eyebrow": "PRIME TIME 危机结束特别节目", "title": "{{official_terms:last}}", "body": "政府已将最终结果定义为“{{choice:label}}”。被扣船只数：{{state:detained_boats}}；协议类型：{{state:agreement_type}}。本台专家将在不阅读协议附件的前提下，详细说明为何这是胜利。", "footer": "下节节目：《谁先眨眼？》"
+  }
+]

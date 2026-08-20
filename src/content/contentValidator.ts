@@ -143,6 +143,11 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
     checkTemplate(framing.body, `${path}.body`);
     checkTemplate(framing.footer, `${path}.footer`);
   }
+  for (const [index, evaluation] of (bundle.scenario.historyEvaluations ?? []).entries()) {
+    const path = `scenario.historyEvaluations.${index}`;
+    visitConditions(evaluation.requirements, (condition) => checkCondition(condition, `${path}.requirements`));
+    checkTemplate(evaluation.text, `${path}.text`);
+  }
 
   const visiting = new Set<string>();
   const visited = new Set<string>();

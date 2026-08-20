@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { GameSave, ResolvedNarrativeFraming } from './models/game';
-import { dismissCurrentFraming, getCurrentEvent, getCurrentFraming, getWeightedCandidates, createGame, choose, scenario } from './store/gameStore';
+import { dismissCurrentFraming, getCurrentEvent, getCurrentFraming, getWeightedCandidates, createGame, choose } from './store/gameStore';
+import { defaultScenarioId, getScenarioBundle, listScenarios } from './content/scenarioRegistry';
 import { loadFromStorage, saveToStorage } from './engine/saveEngine';
 import { getDebtPressureCap } from './engine/debtEngine';
 import './styles.css';
@@ -13,14 +14,6 @@ declare global {
     advanceTime: (ms: number) => void;
   }
 }
-
-const tabs: { id: Tab; label: string }[] = [
-  { id: 'scene', label: '总统办公室' },
-  { id: 'history', label: '历史' },
-  { id: 'archive', label: '政治档案' },
-  { id: 'settings', label: '设置' },
-  { id: 'debug', label: 'Debug' },
-];
 
 function randomSeed() {
   return Math.floor(Math.random() * 900000) + 100000;
@@ -62,16 +55,27 @@ function FramingView({ framing, seenCount, pendingCount, onDismiss }: {
 
 export default function App() {
   const [seed, setSeed] = useState(872631);
+  const [selectedScenarioId, setSelectedScenarioId] = useState(defaultScenarioId);
   const [game, setGame] = useState<GameSave | null>(null);
   const [tab, setTab] = useState<Tab>('scene');
   const [notice, setNotice] = useState('');
   const current = game ? getCurrentEvent(game) : null;
   const currentFraming = game ? getCurrentFraming(game) : null;
   const weightedCandidates = useMemo(() => game ? getWeightedCandidates(game) : [], [game]);
+  const activeScenario = getScenarioBundle(game?.scenarioId ?? selectedScenarioId).scenario;
+  const scenarios = useMemo(() => listScenarios(), []);
+  const tabs: { id: Tab; label: string }[] = useMemo(() => [
+    { id: 'scene', label: activeScenario.workspaceLabel },
+    { id: 'history', label: '历史' },
+    { id: 'archive', label: '政治档案' },
+    { id: 'settings', label: '设置' },
+    { id: 'debug', label: 'Debug' },
+  ], [activeScenario.workspaceLabel]);
 
-  const begin = (nextSeed = seed) => {
+  const begin = (nextSeed = seed, scenarioId = selectedScenarioId) => {
     setSeed(nextSeed);
-    setGame(createGame(nextSeed));
+    setSelectedScenarioId(scenarioId);
+    setGame(createGame(nextSeed, scenarioId));
     setTab('scene');
     setNotice('');
   };
@@ -111,6 +115,7 @@ export default function App() {
       if (!loaded) return setNotice('尚无本地存档。');
       setGame(loaded);
       setSeed(loaded.seed);
+      setSelectedScenarioId(loaded.scenarioId);
       setTab('scene');
       setNotice('存档已恢复。历史拒绝重新开始。');
     } catch (error) {
@@ -123,6 +128,11 @@ export default function App() {
       if (event.key.toLowerCase() === 'f') {
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen();
+      }
+      if (!game && ['enter', ' '].includes(event.key.toLowerCase())) {
+        event.preventDefault();
+        begin();
+        return;
       }
       if (game && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')) {
         const index = tabs.findIndex((item) => item.id === tab);
@@ -153,6 +163,8 @@ export default function App() {
     window.render_game_to_text = () => JSON.stringify(game ? {
       coordinateSystem: 'DOM narrative UI; origin top-left, x right, y down',
       mode: tab,
+      scenarioId: game.scenarioId,
+      playerRole: activeScenario.playerRole,
       turn: game.turn,
       seed: game.seed,
       status: game.status,
@@ -181,9 +193,9 @@ export default function App() {
       memories: game.memories.map((memory) => ({ id: memory.id, topic: memory.topic, statement: memory.statement, public: memory.public, importance: memory.importance, active: memory.active })),
       debts: game.debts.map((debt) => ({ id: debt.id, creditor: debt.creditor, topic: debt.topic, pressure: debt.pressure, status: debt.status })),
       eligibleEvents: weightedCandidates.map((candidate) => ({ id: candidate.event.id, finalWeight: Number(candidate.finalWeight.toFixed(2)) })),
-    } : { mode: 'menu', seed });
+    } : { mode: 'menu', seed, selectedScenarioId, scenarios: scenarios.map((item) => ({ id: item.id, title: item.title, playerRole: item.playerRole })) });
     window.advanceTime = () => undefined;
-  }, [game, current, currentFraming, tab, weightedCandidates, seed]);
+  }, [game, current, currentFraming, tab, weightedCandidates, seed, selectedScenarioId, scenarios]);
 
   return (
     <>
@@ -204,18 +216,26 @@ export default function App() {
         {!game ? (
           <main className="menu-card">
             <div className="seal">🦊</div>
-            <p className="eyebrow gold">STAGE 2 · NARRATIVE FRAMING</p>
-            <h2>{scenario.title}</h2>
-            <p className="menu-copy">{scenario.opening}</p>
+            <p className="eyebrow gold">STAGE 3 · CROSS-SCENARIO VALIDATION</p>
+            <h2>{activeScenario.title}</h2>
+            <p className="menu-role">玩家身份：{activeScenario.playerRole}</p>
+            <p className="menu-copy">{activeScenario.opening}</p>
+            <div className="scenario-picker" role="radiogroup" aria-label="选择剧本">
+              {scenarios.map((item) => (
+                <button key={item.id} role="radio" aria-checked={selectedScenarioId === item.id} className={selectedScenarioId === item.id ? 'selected' : ''} onClick={() => setSelectedScenarioId(item.id)}>
+                  <span>{item.subtitle}</span><strong>{item.title}</strong><small>{item.playerRole}</small>
+                </button>
+              ))}
+            </div>
             <label className="seed-field">
               <span>共和国档案编号 / Seed</span>
               <input type="number" value={seed} onChange={(event) => setSeed(Number(event.target.value))} />
             </label>
             <div className="menu-actions">
-              <button id="start-btn" className="primary-button" onClick={() => begin()}>宣誓就职</button>
+              <button id="start-btn" className="primary-button" onClick={() => begin()}>开始剧本</button>
               <button className="secondary-button" onClick={() => setSeed(randomSeed())}>换一个档案</button>
             </div>
-            <p className="controls">数字键 1–4 选择 · ←/→ 切换页面 · F 全屏 · Esc 退出全屏</p>
+            <p className="controls">Enter / Space 开始 · 数字键 1–4 选择 · ←/→ 切换页面 · F 全屏</p>
           </main>
         ) : (
           <main className="game-layout">
@@ -234,7 +254,7 @@ export default function App() {
                 <FramingView framing={currentFraming} seenCount={game.seenFramingIds.length} pendingCount={game.pendingFramingIds.length} onDismiss={dismissFraming} />
               )}
               {tab === 'scene' && !currentFraming && game.status === 'completed' && (
-                <div className="menu-card completion-card"><div className="seal">📚</div><p className="eyebrow gold">SCENARIO COMPLETE</p><h2>本局已经进入历史</h2><p className="menu-copy">最终事件已正常结算，所有选择、记忆、债务与历史记录均保留在当前存档中。</p><button className="primary-button" onClick={() => begin(seed)}>使用相同 Seed 重新开始</button></div>
+                <div className="menu-card completion-card"><div className="seal">📚</div><p className="eyebrow gold">SCENARIO COMPLETE</p><h2>本局已经进入历史</h2><p className="menu-copy">最终事件已正常结算，所有选择、记忆、债务与历史记录均保留在当前存档中。</p><button className="primary-button" onClick={() => begin(seed, game.scenarioId)}>使用相同 Seed 重新开始</button></div>
               )}
               {tab === 'scene' && !currentFraming && current && (
                 <div className="scene-view">
@@ -273,7 +293,7 @@ export default function App() {
                 </div>
               )}
               {tab === 'settings' && (
-                <div className="page-view"><p className="eyebrow gold">SETTINGS</p><h2>设置</h2><div className="settings-row"><div><strong>全屏模式</strong><p>演说需要更大的舞台。</p></div><button className="secondary-button" onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()}>切换（F）</button></div><div className="settings-row"><div><strong>重新开始</strong><p>使用相同 Seed 重演另一种历史。</p></div><button className="secondary-button" onClick={() => begin(seed)}>新一届政府</button></div></div>
+                <div className="page-view"><p className="eyebrow gold">SETTINGS</p><h2>设置</h2><div className="settings-row"><div><strong>全屏模式</strong><p>演说需要更大的舞台。</p></div><button className="secondary-button" onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()}>切换（F）</button></div><div className="settings-row"><div><strong>重新开始</strong><p>使用相同 Seed 重演另一种历史。</p></div><button className="secondary-button" onClick={() => begin(seed, game.scenarioId)}>重新开始当前剧本</button></div></div>
               )}
               {tab === 'debug' && (
                 <div className="page-view debug-view"><p className="eyebrow gold">ENGINE INSPECTOR</p><h2>Debug 面板</h2><div className="debug-grid"><section><h3>运行状态</h3><pre>{JSON.stringify({ status: game.status, phase: game.worldState.phase, turn: game.turn, scenarioId: game.scenarioId, seed: game.seed, rngState: game.rngState, currentEvent: game.currentEventId, completedEvents: game.completedEvents, pendingFramingIds: game.pendingFramingIds, seenFramingIds: game.seenFramingIds }, null, 2)}</pre></section><section><h3>候选事件权重</h3><pre>{JSON.stringify(weightedCandidates.map((candidate) => ({ id: candidate.event.id, base: candidate.baseWeight, priority: candidate.priorityBonus, debt: Number(candidate.debtBonus.toFixed(2)), memory: Number(candidate.memoryBonus.toFixed(2)), thread: candidate.threadBonus, urgency: Number(candidate.urgencyBonus.toFixed(2)), repetition: candidate.repetitionPenalty, final: Number(candidate.finalWeight.toFixed(2)) })), null, 2)}</pre></section><section><h3>World State</h3><pre>{JSON.stringify(game.worldState, null, 2)}</pre></section><section><h3>Memories</h3><pre>{JSON.stringify(game.memories, null, 2)}</pre></section><section><h3>Debts</h3><pre>{JSON.stringify(game.debts, null, 2)}</pre></section></div></div>
@@ -281,7 +301,7 @@ export default function App() {
             </section>
           </main>
         )}
-        <footer><span>原型版本 0.4.0 · Stage 2</span><span>事实发生一次，叙事可以反复修订。</span></footer>
+        <footer><span>原型版本 0.5.0 · Stage 3</span><span>引擎不关心议题，制度总会找到新的借口。</span></footer>
       </div>
     </>
   );

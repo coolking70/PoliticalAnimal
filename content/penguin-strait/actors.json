@@ -1,0 +1,10 @@
+[
+  { "id": "foreign_minister", "name": "外交部长阁下", "species": "fox", "emoji": "🦊", "role": "玩家·狐狸共和国外交部长", "institutionId": "fox_foreign_ministry" },
+  { "id": "deputy_seal", "name": "塞尔·长须", "species": "seal", "emoji": "🦭", "role": "常务副外长", "institutionId": "fox_foreign_ministry" },
+  { "id": "admiral_wolf", "name": "维克多·灰潮", "species": "wolf", "emoji": "🐺", "role": "海军参谋长", "institutionId": "fox_navy" },
+  { "id": "fisher_otter", "name": "奥拉·深网", "species": "otter", "emoji": "🦦", "role": "海峡渔民协会主席", "institutionId": "strait_fishers" },
+  { "id": "anchor_fox", "name": "《共和国潮声》主播", "species": "fox", "emoji": "📺", "role": "外交新闻主持人", "institutionId": "fox_media" },
+  { "id": "ambassador_penguin", "name": "帕克·冰翼", "species": "penguin", "emoji": "🐧", "role": "企鹅海上共和国大使", "institutionId": "penguin_republic" },
+  { "id": "commodore_penguin", "name": "奥托·黑白波", "species": "penguin", "emoji": "🐧", "role": "企鹅海岸防发言人", "institutionId": "penguin_republic" },
+  { "id": "envoy_albatross", "name": "艾莉亚·长翼", "species": "albatross", "emoji": "🐦", "role": "海鸟共同防务会特使", "institutionId": "seabird_alliance" }
+]

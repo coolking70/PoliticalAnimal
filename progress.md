@@ -33,6 +33,13 @@ Original prompt: 请参考 Political_Animal_Game_Design_v0.1.md，进行项目�
 - Stage 2 验证：22 项 Vitest、6 项内容校验、10,000 Seed 全部通过，生产构建成功。
 - Playwright 实测 Newspaper、TV News、Government Memo、Internal Memo 的展示与连续阅读；截图、render_game_to_text 和控制台状态一致。
 - E20 实测为先正常结算 completed，再展示两个历史 framing，读完进入原结算页，无新线性节点或控制台错误。
+- Stage 3：新建独立 `content/penguin-strait/` 剧本，包含 20 个事件、5 个阶段、8 个角色、7 个机构、4 个结局与 14 个 framing。
+- 企鹅海峡剧本复用 Memory、Political Debt、确定性权重调度、official_terms 和事件后 Framing 队列，没有新增题材专用引擎。
+- 军方、渔民、盟友与对方政府债务会推高相关事件权重；公开红线与危机官方措辞会在后续事件和公文中引用。
+- Scenario Registry 现同时注册教育与外交剧本；主菜单新增剧本与玩家身份选择，工作区标签从 Scenario JSON 读取。
+- 将教育专用的历史评价函数替换为 Scenario JSON 条件文本，教育和海峡结局共用同一渲染逻辑。
+- Stage 3 自动验证：29 项 Vitest、9 项内容校验，两个剧本各 10,000 Seed 全部完成且均有事件顺序变化。
+- Playwright 已目视检查双剧本菜单、外交部战情室、政府公文 framing、official wording 重复引用、外交结局与教育结局，控制台无错误。
 
 ## TODO
 

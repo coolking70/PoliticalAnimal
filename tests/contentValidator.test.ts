@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { choose, createGame, getCurrentEvent } from '../src/store/gameStore';
-import { defaultScenarioId, getScenarioBundle } from '../src/content/scenarioRegistry';
+import { defaultScenarioId, getScenarioBundle, listScenarioIds } from '../src/content/scenarioRegistry';
 import { validateScenarioBundle } from '../src/content/contentValidator';
 
 describe('education demo content', () => {
-  it('passes actor, institution, state field, dependency, and ending validation', () => {
-    expect(validateScenarioBundle(getScenarioBundle(defaultScenarioId))).toEqual([]);
+  it('passes actor, institution, framing, state, dependency, and ending validation for every registered scenario', () => {
+    for (const scenarioId of listScenarioIds()) {
+      expect(validateScenarioBundle(getScenarioBundle(scenarioId)), scenarioId).toEqual([]);
+    }
   });
 
   it('reports unknown ids, misspelled fields, and duplicate references', () => {
@@ -54,24 +56,49 @@ describe('education demo content', () => {
   });
 
   it('10,000 seeded bots reach a completed ending with varied event order', () => {
-    const sequences = new Set<string>();
-    for (let seed = 1; seed <= 10_000; seed += 1) {
-      let game = createGame(seed);
-      let steps = 0;
-      const sequence: string[] = [];
-      while (game.status === 'playing' && steps < 50) {
-        const event = getCurrentEvent(game);
-        expect(event, `seed ${seed} has no current event`).not.toBeNull();
-        sequence.push(event!.id);
-        const choice = event!.choices[(seed + steps * 7) % event!.choices.length];
-        game = choose(game, choice);
-        steps += 1;
+    for (const scenarioId of listScenarioIds()) {
+      const sequences = new Set<string>();
+      for (let seed = 1; seed <= 10_000; seed += 1) {
+        let game = createGame(seed, scenarioId);
+        let steps = 0;
+        const sequence: string[] = [];
+        while (game.status === 'playing' && steps < 50) {
+          const event = getCurrentEvent(game);
+          expect(event, `${scenarioId} seed ${seed} has no current event`).not.toBeNull();
+          sequence.push(event!.id);
+          const choice = event!.choices[(seed + steps * 7) % event!.choices.length];
+          game = choose(game, choice);
+          steps += 1;
+        }
+        expect(game.status, `${scenarioId} seed ${seed} dead-ended`).toBe('completed');
+        expect(steps, `${scenarioId} seed ${seed} looped`).toBeLessThan(50);
+        if (sequences.size < 100) sequences.add(sequence.join(','));
       }
-      expect(game.status, `seed ${seed} dead-ended`).toBe('completed');
-      expect(game.completedEvents.some((id) => id === 'E20')).toBe(true);
-      expect(steps, `seed ${seed} looped`).toBeLessThan(50);
-      if (sequences.size < 100) sequences.add(sequence.join(','));
+      expect(sequences.size, `${scenarioId} lacks order variation`).toBeGreaterThan(5);
     }
-    expect(sequences.size).toBeGreaterThan(5);
-  }, 20_000);
+  }, 30_000);
+});
+
+describe('penguin strait content', () => {
+  const bundle = getScenarioBundle('penguin_strait');
+
+  it('meets the cross-scenario content scale and ending targets', () => {
+    expect(bundle.events).toHaveLength(20);
+    expect(bundle.scenario.phases).toHaveLength(5);
+    expect(bundle.actors.length).toBeGreaterThanOrEqual(6);
+    expect(bundle.institutions.length).toBeGreaterThanOrEqual(5);
+    expect(bundle.events.filter((event) => event.type === 'ending')).toHaveLength(4);
+    expect(bundle.framings.length).toBeGreaterThanOrEqual(10);
+    expect(bundle.framings.length).toBeLessThanOrEqual(15);
+  });
+
+  it('covers all required diplomatic framing viewpoints and formats', () => {
+    expect(new Set(bundle.framings.map((framing) => framing.type))).toEqual(new Set(['newspaper', 'tv_news', 'government_memo', 'internal_memo']));
+    expect(new Set(bundle.framings.map((framing) => framing.stance))).toEqual(new Set(['government', 'media', 'opposition', 'institution', 'foreign_observer']));
+  });
+
+  it('uses the selected official wording in later events and framings', () => {
+    expect(bundle.events.some((event) => event.id !== 'P02' && event.scene.includes('{{official_terms:last}}'))).toBe(true);
+    expect(bundle.framings.some((framing) => framing.body.includes('{{official_terms:last}}') || framing.title.includes('{{official_terms:last}}'))).toBe(true);
+  });
 });
