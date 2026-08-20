@@ -189,10 +189,16 @@ export interface Scenario {
   id: string;
   title: string;
   subtitle: string;
+  playerRole: string;
+  workspaceLabel: string;
   opening: string;
   initialState: WorldState;
   stateSchema: Record<string, StateValueType>;
   phases: ScenarioPhase[];
+  historyEvaluations?: {
+    requirements?: Condition[];
+    text: string;
+  }[];
 }
 
 export interface ScenarioBundle {

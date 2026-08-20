@@ -1,0 +1,168 @@
+[
+  {
+    "id": "P01", "title": "渔船被扣押", "type": "core", "thread": ["Diplomacy", "Fisheries"], "priority": 200, "weight": 1, "once": true, "phase": "spark", "actorId": "deputy_seal", "institutionId": "fox_foreign_ministry",
+    "scene": "企鹅海上共和国扣押了两艘渔船，理由是它们在北矶岛附近‘过度捕获了未经共识的鱼’。总统问：这是外交事件，还是一条需要海军护送的新闻？",
+    "choices": [
+      { "id": "A", "label": "立即要求放人放船", "response": "第一份抗议照会在早餐前送达，双方都得到了一个可以拒绝的正式要求。", "effects": [{ "field": "escalation", "operation": "increment", "value": 1 }, { "field": "domestic_pressure", "operation": "increment", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "initial_commitment", "statement": "共和国不会抛弃任何一艘合法作业的渔船。", "public": true, "importance": 4, "tags": ["fisheries", "commitment"] }] },
+      { "id": "B", "label": "先开启秘密渠道", "response": "两国官员同意秘密会谈，并立即向各自媒体否认存在秘密会谈。", "effects": [{ "field": "diplomatic_channel", "operation": "increment", "value": 2 }, { "field": "restraint", "operation": "increment", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "initial_commitment", "statement": "我们将以不损害任何一方尊严的方式带回渔民。", "public": false, "importance": 3, "tags": ["diplomacy", "restraint"] }] },
+      { "id": "C", "label": "让海军准备护送", "response": "海军在地图上画出了一条‘完全不会导致接触’的路线，它恰好穿过争议海域。", "effects": [{ "field": "naval_posture", "operation": "increment", "value": 2 }, { "field": "escalation", "operation": "increment", "value": 2 }, { "field": "patrol_authorized", "operation": "set", "value": true }], "debts": [{ "creditor": "fox_navy", "type": "operational_promise", "topic": "naval_backing", "strength": 3, "pressure": 2, "description": "海军期待外交部为已准备的行动提供政治支持。", "tags": ["navy", "credibility"] }] }
+    ]
+  },
+  {
+    "id": "P02", "title": "外交部第一次声明", "type": "core", "thread": ["Diplomacy", "Media"], "priority": 112, "weight": 1, "once": true, "phase": "posture", "actorId": "deputy_seal", "institutionId": "fox_foreign_ministry", "after": ["P01"],
+    "scene": "记者已经知道渔船被扣，但还不知道应该愤怒到什么程度。你需要先为危机命名，现实才能决定自己有多严重。",
+    "choices": [
+      { "id": "A", "label": "“领海侵犯”", "response": "地图编辑们开始加粗边界线，尽管他们昨天还用虚线。", "effects": [{ "field": "official_terms", "operation": "push", "value": "领海侵犯" }, { "field": "escalation", "operation": "increment", "value": 2 }, { "field": "media_pressure", "operation": "increment", "value": 2 }], "memories": [{ "speaker": "foreign_minister", "topic": "crisis_wording", "statement": "这是一次对共和国领海的侵犯。", "public": true, "importance": 5, "tags": ["wording", "hardline"] }] },
+      { "id": "B", "label": "“海上摩擦”", "response": "危机获得了一个能在头条和外交酒会同时使用的名字。", "effects": [{ "field": "official_terms", "operation": "push", "value": "海上摩擦" }, { "field": "escalation", "operation": "increment", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "crisis_wording", "statement": "两国之间发生了一次需要严肃处理的海上摩擦。", "public": true, "importance": 4, "tags": ["wording", "balanced"] }] },
+      { "id": "C", "label": "“临时航行误会”", "response": "交易员们松了一口气，渔民们则开始询问自己是如何被误会进拘留所的。", "effects": [{ "field": "official_terms", "operation": "push", "value": "临时航行误会" }, { "field": "restraint", "operation": "increment", "value": 2 }, { "field": "domestic_pressure", "operation": "increment", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "crisis_wording", "statement": "这是一次临时航行误会，不应被政治化。", "public": true, "importance": 3, "tags": ["wording", "restraint"] }] },
+      { "id": "D", "label": "“友好国家间技术性地理分歧”", "response": "声明长得无法容纳于电视字幕，危机因此暂时失去了画面。", "effects": [{ "field": "official_terms", "operation": "push", "value": "友好国家间技术性地理分歧" }, { "field": "diplomatic_channel", "operation": "increment", "value": 2 }, { "field": "media_pressure", "operation": "increment", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "crisis_wording", "statement": "这是友好国家间的技术性地理分歧。", "public": true, "importance": 4, "tags": ["wording", "euphemism"] }] }
+    ]
+  },
+  {
+    "id": "P03", "title": "海军要求巡航", "type": "reactive", "thread": ["Military", "Diplomacy"], "priority": 108, "weight": 1, "once": true, "phase": "posture", "actorId": "admiral_wolf", "institutionId": "fox_navy", "after": ["P01"], "urgencyFields": ["escalation", "domestic_pressure"],
+    "scene": "海军参谋长带来三套巡航方案：象征性、可见性和官方否认性。他保证三套方案都是防御性的，只是对方需要用不同的望远镜才能理解。",
+    "choices": [
+      { "id": "A", "label": "批准全规模巡航", "response": "舰队驶出港口，外交部得到一个移动速度快于照会的论点。", "effects": [{ "field": "naval_posture", "operation": "increment", "value": 3 }, { "field": "escalation", "operation": "increment", "value": 2 }, { "field": "patrol_authorized", "operation": "set", "value": true }], "debts": [{ "creditor": "fox_navy", "type": "credibility_commitment", "topic": "naval_backing", "strength": 4, "pressure": 3, "description": "海军期待外交部在巡航遭到挑战时兑现政治背书。", "tags": ["navy", "red_line"] }] },
+      { "id": "B", "label": "只做象征性巡航", "response": "一艘船在港口外绕了一圈，双方都拍到了需要的照片。", "effects": [{ "field": "naval_posture", "operation": "increment", "value": 1 }, { "field": "escalation", "operation": "increment", "value": 1 }, { "field": "patrol_authorized", "operation": "set", "value": true }], "debts": [{ "creditor": "fox_navy", "type": "future_authority", "topic": "naval_backing", "strength": 2, "pressure": 1, "description": "海军等待下一次获得更清晰的行动授权。", "tags": ["navy", "symbolic"] }] },
+      { "id": "C", "label": "拒绝巡航", "response": "海军接受文官决定，并把每艘留港军舰的照片发给了记者。", "effects": [{ "field": "restraint", "operation": "increment", "value": 2 }, { "field": "domestic_pressure", "operation": "increment", "value": 2 }] }
+    ]
+  },
+  {
+    "id": "P04", "title": "渔民协会抗议", "type": "reactive", "thread": ["Fisheries", "Domestic"], "priority": 106, "weight": 1, "once": true, "phase": "posture", "actorId": "fisher_otter", "institutionId": "strait_fishers", "after": ["P01"], "urgencyFields": ["fisher_pressure", "domestic_pressure"],
+    "scene": "渔民协会把两艘空船位停在议会前。他们要求政府保护捕鱼权，并指出外交修辞至今没有捕到一条鱼。",
+    "choices": [
+      { "id": "A", "label": "立即补偿被扣渔民", "response": "协会收下支票，并说明金额只代表政府对问题的最低估值。", "effects": [{ "field": "fisher_pressure", "operation": "decrement", "value": 1 }, { "field": "domestic_pressure", "operation": "decrement", "value": 1 }], "debts": [{ "creditor": "strait_fishers", "type": "access_promise", "topic": "fisher_protection", "strength": 3, "pressure": 2, "description": "渔民期待赔偿之后恢复对争议海域的实际准入。", "tags": ["fisheries", "access"] }] },
+      { "id": "B", "label": "公开承诺保护捕鱼权", "response": "渔民把承诺印在新船旗上，以便海军和未来的外交部长都能看见。", "effects": [{ "field": "fisher_pressure", "operation": "increment", "value": 1 }, { "field": "domestic_pressure", "operation": "increment", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "fisher_commitment", "statement": "政府将保护我国渔民在传统海域的合法权利。", "public": true, "importance": 5, "tags": ["fisheries", "promise"] }], "debts": [{ "creditor": "strait_fishers", "type": "protection_promise", "topic": "fisher_protection", "strength": 4, "pressure": 3, "description": "渔民要求政府兑现对传统捕鱼权的公开保护承诺。", "tags": ["fisheries", "promise", "public"] }] },
+      { "id": "C", "label": "要求他们顾全外交大局", "response": "协会同意顾全大局，前提是政府先说明大局是否会向他们支付港口费。", "effects": [{ "field": "fisher_pressure", "operation": "increment", "value": 3 }, { "field": "domestic_pressure", "operation": "increment", "value": 2 }] }
+    ]
+  },
+  {
+    "id": "P05", "title": "媒体要求公布红线", "type": "reactive", "thread": ["Media", "Domestic"], "priority": 107, "weight": 1, "once": true, "phase": "posture", "actorId": "anchor_fox", "institutionId": "fox_media", "after": ["P01"], "urgencyFields": ["media_pressure", "escalation"],
+    "scene": "晚间新闻在海图上画了一条红线，并请求外交部证实这是否是外交部的红线。问题在于，那条线是节目美术师为了画面平衡随手画的。",
+    "choices": [
+      { "id": "A", "label": "提前宣布不可退让的红线", "response": "市场立即开始计算红线的保费，海军则计算从港口到红线的油料。", "effects": [{ "field": "red_line_defined", "operation": "set", "value": true }, { "field": "escalation", "operation": "increment", "value": 2 }, { "field": "media_pressure", "operation": "decrement", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "red_line", "statement": "任何外国公务船进入北矶岛十海里范围，都将触及共和国红线。", "public": true, "importance": 5, "tags": ["red_line", "public"] }] },
+      { "id": "B", "label": "说明外交不使用电视红线", "response": "主播将回答总结为‘政府拒绝透露红线’，并保留了屏幕上的红线。", "effects": [{ "field": "media_pressure", "operation": "increment", "value": 2 }, { "field": "restraint", "operation": "increment", "value": 1 }] },
+      { "id": "C", "label": "只向记者做不可引用的说明", "response": "三分钟后，六家媒体同时引用了一位不愿透露姓名的高级官员。", "effects": [{ "field": "diplomatic_channel", "operation": "increment", "value": 1 }, { "field": "media_pressure", "operation": "increment", "value": 1 }] }
+    ]
+  },
+  {
+    "id": "P06", "title": "对方召见大使", "type": "core", "thread": ["Diplomacy", "Opposition"], "priority": 108, "weight": 1, "once": true, "phase": "escalation", "actorId": "ambassador_penguin", "institutionId": "penguin_republic", "after": ["P02"], "urgencyFields": ["opponent_tension", "escalation"],
+    "scene": "企鹅共和国就“{{official_terms:last}}”召见我方大使，认为该措辞‘不符合地理与友谊的客观温度’。企鹅大使建议双方各自召见一次，以恢复仪式平衡。",
+    "choices": [
+      { "id": "A", "label": "对等召见企鹅大使", "response": "两位大使在各自首都同时被告知对方严重关切，外交礼仪恢复对称。", "effects": [{ "field": "escalation", "operation": "increment", "value": 2 }, { "field": "opponent_tension", "operation": "increment", "value": 1 }] },
+      { "id": "B", "label": "递交私下降温照会", "response": "企鹅大使接受了照会，并小心地没有把接受理解为同意。", "effects": [{ "field": "diplomatic_channel", "operation": "increment", "value": 2 }, { "field": "restraint", "operation": "increment", "value": 1 }], "debts": [{ "creditor": "penguin_republic", "type": "restraint_assurance", "topic": "diplomatic_restraint", "strength": 3, "pressure": 2, "description": "企鹅政府期待我方兑现私下控制军事行动的保证。", "tags": ["opponent", "restraint"] }] },
+      { "id": "C", "label": "公开原声明并要求道歉", "response": "原声明第二次成为头条，这次被当作对道歉的拒绝。", "effects": [{ "field": "media_pressure", "operation": "increment", "value": 2 }, { "field": "opponent_tension", "operation": "increment", "value": 2 }] }
+    ]
+  },
+  {
+    "id": "P07", "title": "玩家公开定义红线", "type": "core", "thread": ["Diplomacy", "Media"], "priority": 110, "weight": 1, "once": true, "phase": "escalation", "actorId": "anchor_fox", "institutionId": "fox_media", "after": ["P05"], "urgencyFields": ["media_pressure", "domestic_pressure"],
+    "scene": "记者终于把问题缩短到无法躲避：对方做什么，共和国就一定会行动？每台摄像机都在等待一句未来可以反复播放的话。",
+    "choices": [
+      { "id": "A", "label": "红线是对方公务船进入十海里", "response": "海图上终于有了一条粗细合适的线，只是两国仍然不同意它从哪里开始量。", "effects": [{ "field": "red_line_defined", "operation": "set", "value": true }, { "field": "escalation", "operation": "increment", "value": 2 }], "memories": [{ "speaker": "foreign_minister", "topic": "red_line", "statement": "对方公务船进入北矶岛十海里，将触发我国必要行动。", "public": true, "importance": 5, "tags": ["red_line", "territory"] }] },
+      { "id": "B", "label": "红线是伤害我方渔民", "response": "外交部把一条地理线改成了行为线，地图编辑失去了节目嘉宾资格。", "effects": [{ "field": "red_line_defined", "operation": "set", "value": true }, { "field": "domestic_pressure", "operation": "decrement", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "red_line", "statement": "共和国的红线是任何对我国渔民的实际伤害。", "public": true, "importance": 5, "tags": ["red_line", "fisheries"] }] },
+      { "id": "C", "label": "红线是任何一方首先使用武力", "response": "双方都欢迎这条红线，并开始准备证明如果出事一定是对方先动手。", "effects": [{ "field": "red_line_defined", "operation": "set", "value": true }, { "field": "restraint", "operation": "increment", "value": 2 }, { "field": "diplomatic_channel", "operation": "increment", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "red_line", "statement": "任何一方首先使用武力，都将跨过共和国红线。", "public": true, "importance": 4, "tags": ["red_line", "restraint"] }] }
+    ]
+  },
+  {
+    "id": "P08", "title": "对方舰艇越过模糊海域", "type": "reactive", "thread": ["Military", "Opposition"], "priority": 109, "weight": 1, "once": true, "phase": "escalation", "actorId": "commodore_penguin", "institutionId": "penguin_republic", "after": ["P03"], "debtTopics": ["naval_backing"], "urgencyFields": ["naval_posture", "escalation", "opponent_tension"],
+    "scene": "一艘企鹅岸防舰驶入了两国海图颜色互相覆盖的水域。对方称这是常规航行；我方雷达员称它在屏幕上显得非常不常规。",
+    "choices": [
+      { "id": "A", "label": "派舰跟踪", "response": "两艘船保持着足以拍照、不足以放松的距离同向航行。", "effects": [{ "field": "red_line_tested", "operation": "set", "value": true }, { "field": "naval_posture", "operation": "increment", "value": 2 }, { "field": "escalation", "operation": "increment", "value": 2 }] },
+      { "id": "B", "label": "无线电警告", "response": "对方回答收到信号，但没有收到我方对信号的法律解释。", "effects": [{ "field": "red_line_tested", "operation": "set", "value": true }, { "field": "escalation", "operation": "increment", "value": 1 }, { "field": "opponent_tension", "operation": "increment", "value": 1 }] },
+      { "id": "C", "label": "记录但不拦截", "response": "舰艇离开后，外交部拥有了一份完整记录，以及国内媒体对为何只有记录的不完整理解。", "effects": [{ "field": "red_line_tested", "operation": "set", "value": true }, { "field": "restraint", "operation": "increment", "value": 2 }, { "field": "domestic_pressure", "operation": "increment", "value": 2 }] }
+    ]
+  },
+  {
+    "id": "P09", "title": "是否兑现红线", "type": "debt", "thread": ["Military", "Diplomacy", "Domestic"], "priority": 111, "weight": 1, "once": true, "phase": "escalation", "actorId": "admiral_wolf", "institutionId": "fox_navy", "after": ["P07", "P08"], "debtTopics": ["naval_backing", "fisher_protection"], "memoryTopics": ["red_line", "fisher_commitment"], "urgencyFields": ["escalation", "domestic_pressure", "naval_posture"],
+    "scene": "海军参谋长把你的原话放在桌上：‘{{memory:red_line}}’对方舰艇已经做了一件接近这句话、但双方仍可以争论是否完全符合的事。",
+    "choices": [
+      { "id": "A", "label": "拦截并驱离", "response": "舰船拉响警报，彼此在最安全的距离上展示了最危险的意图。", "effects": [{ "field": "red_line_honored", "operation": "set", "value": true }, { "field": "escalation", "operation": "increment", "value": 4 }, { "field": "naval_posture", "operation": "increment", "value": 2 }], "debtActions": [{ "action": "resolve", "topic": "naval_backing" }] },
+      { "id": "B", "label": "发射照明弹作象征性回应", "response": "夜空被照亮，双方政府都声称对方终于看清了局势。", "effects": [{ "field": "red_line_honored", "operation": "set", "value": true }, { "field": "escalation", "operation": "increment", "value": 2 }, { "field": "media_pressure", "operation": "increment", "value": 1 }], "debtActions": [{ "action": "resolve", "topic": "naval_backing" }] },
+      { "id": "C", "label": "说明此次未达到红线的技术门槛", "response": "外交部为红线添加了脚注。脚注比红线更长，也更能阻止舰船穿过。", "effects": [{ "field": "red_line_honored", "operation": "set", "value": false }, { "field": "restraint", "operation": "increment", "value": 2 }, { "field": "domestic_pressure", "operation": "increment", "value": 3 }], "debtActions": [{ "action": "break", "topic": "naval_backing" }] }
+    ]
+  },
+  {
+    "id": "P10", "title": "盟友提出支持", "type": "reactive", "thread": ["Alliance", "Diplomacy"], "priority": 105, "weight": 1, "once": true, "phase": "escalation", "actorId": "envoy_albatross", "institutionId": "seabird_alliance", "afterAny": ["P06", "P08"], "urgencyFields": ["escalation", "naval_posture"],
+    "scene": "海鸟共同防务会愿意发表支持声明。特使强调，支持完全无条件；附件中有关未来港口准入的三页内容只是背景资料。",
+    "choices": [
+      { "id": "A", "label": "接受公开军事支持", "response": "盟友的飞机出现在远处天空，同时一份未来回报清单出现在你的抽屉里。", "effects": [{ "field": "ally_commitment", "operation": "increment", "value": 3 }, { "field": "escalation", "operation": "increment", "value": 2 }], "debts": [{ "creditor": "seabird_alliance", "type": "alliance_reciprocity", "topic": "ally_reciprocity", "strength": 4, "pressure": 2, "description": "海鸟盟友期待共和国以未来港口准入和外交支持回报此次声援。", "tags": ["ally", "future_return"] }] },
+      { "id": "B", "label": "只接受外交声明", "response": "盟友发布了一份建议各方克制、并特别欣赏我方克制的声明。", "effects": [{ "field": "ally_commitment", "operation": "increment", "value": 1 }, { "field": "diplomatic_channel", "operation": "increment", "value": 1 }], "debts": [{ "creditor": "seabird_alliance", "type": "diplomatic_reciprocity", "topic": "ally_reciprocity", "strength": 2, "pressure": 1, "description": "盟友期待共和国在下次区域表决中记得此次声明。", "tags": ["ally", "statement"] }] },
+      { "id": "C", "label": "婉拒支持", "response": "特使称赞我国战略自主，然后向记者说明自主并不等于不需要朋友。", "effects": [{ "field": "restraint", "operation": "increment", "value": 1 }, { "field": "domestic_pressure", "operation": "increment", "value": 1 }] }
+    ]
+  },
+  {
+    "id": "P11", "title": "泄露的内部外交电报", "type": "reactive", "thread": ["Media", "Diplomacy"], "priority": 106, "weight": 1, "once": true, "phase": "escalation", "actorId": "deputy_seal", "institutionId": "fox_foreign_ministry", "after": ["P06"], "memoryTopics": ["red_line", "crisis_wording"], "urgencyFields": ["media_pressure", "domestic_pressure"],
+    "scene": "一份内部电报泄露，称对方也不想开战，但必须让国内观众相信它愿意开战。电报还备注：我方情况基本相同。",
+    "choices": [
+      { "id": "A", "label": "承认电报真实", "response": "公众第一次得知外交官知道真相，并立即怀疑这是更大的策略。", "effects": [{ "field": "cable_leaked", "operation": "set", "value": true }, { "field": "diplomatic_channel", "operation": "increment", "value": 1 }, { "field": "media_pressure", "operation": "increment", "value": 1 }], "memories": [{ "speaker": "foreign_minister", "topic": "private_assessment", "statement": "双方都不希望战争，但都需要显得自己不害怕战争。", "public": true, "importance": 4, "tags": ["leak", "assessment"] }] },
+      { "id": "B", "label": "否认并称其断章取义", "response": "外交部没有指出被截断的上下文，以免公众读到更多上下文。", "effects": [{ "field": "cable_leaked", "operation": "set", "value": true }, { "field": "media_pressure", "operation": "increment", "value": 2 }, { "field": "domestic_pressure", "operation": "increment", "value": 1 }] },
+      { "id": "C", "label": "宣布内部泄密调查", "response": "危机获得了第二条战线：谁告诉了公众双方都很理性。", "effects": [{ "field": "cable_leaked", "operation": "set", "value": true }, { "field": "domestic_pressure", "operation": "increment", "value": 2 }, { "field": "media_pressure", "operation": "increment", "value": 1 }] }
+    ]
+  },
+  {
+    "id": "P12", "title": "双方领导人热线", "type": "core", "thread": ["Diplomacy", "Leadership"], "priority": 109, "weight": 1, "once": true, "phase": "settlement", "actorId": "ambassador_penguin", "institutionId": "penguin_republic", "after": ["P09"], "debtTopics": ["diplomatic_restraint"], "urgencyFields": ["escalation", "opponent_tension"],
+    "scene": "双方领导人同意通话。在接通前，两边外交部先花了四十分钟确认这是一条‘非正式正式热线’，以免通话本身被解释为让步。",
+    "choices": [
+      { "id": "A", "label": "提议双方同时后撤", "response": "两位领导人同意同时后撤，只要没有人试图证明对方先撤。", "effects": [{ "field": "escalation", "operation": "decrement", "value": 3 }, { "field": "diplomatic_channel", "operation": "increment", "value": 3 }, { "field": "restraint", "operation": "increment", "value": 1 }], "debtActions": [{ "action": "resolve", "topic": "diplomatic_restraint" }] },
+      { "id": "B", "label": "要求对方先释放渔船", "response": "对方同意在我方先降低巡航级别后释放，双方获得了一个可以循环等待的先决条件。", "effects": [{ "field": "diplomatic_channel", "operation": "increment", "value": 1 }, { "field": "domestic_pressure", "operation": "increment", "value": 1 }] },
+      { "id": "C", "label": "警告对方时间不多", "response": "热线成功传达了紧迫感，但没有传达到底还剩多少时间。", "effects": [{ "field": "escalation", "operation": "increment", "value": 2 }, { "field": "opponent_tension", "operation": "increment", "value": 2 }], "debtActions": [{ "action": "break", "topic": "diplomatic_restraint" }] }
+    ]
+  },
+  {
+    "id": "P13", "title": "国内渔业与媒体压力", "type": "debt", "thread": ["Fisheries", "Media", "Domestic"], "priority": 107, "weight": 1, "once": true, "phase": "settlement", "actorId": "fisher_otter", "institutionId": "strait_fishers", "after": ["P09"], "debtTopics": ["fisher_protection"], "memoryTopics": ["fisher_commitment", "red_line"], "urgencyFields": ["fisher_pressure", "domestic_pressure", "media_pressure"],
+    "scene": "渔民协会带来你过去的承诺，媒体带来你过去的红线。两者都要求你证明“{{official_terms:last}}”不会以渔民离开海域为代价结束。",
+    "choices": [
+      { "id": "A", "label": "承诺临时协议必须保留捕鱼权", "response": "渔民欢迎这项保证，并要求将‘临时’和‘必须’的法律顺序写清楚。", "effects": [{ "field": "fisher_pressure", "operation": "decrement", "value": 2 }, { "field": "domestic_pressure", "operation": "decrement", "value": 1 }], "debtActions": [{ "action": "resolve", "topic": "fisher_protection" }] },
+      { "id": "B", "label": "以国家补偿换取暂停出海", "response": "协会接受了暂停，并把停船日期写成‘政府欠款期间’。", "effects": [{ "field": "fisher_pressure", "operation": "decrement", "value": 1 }, { "field": "restraint", "operation": "increment", "value": 2 }], "debtActions": [{ "action": "resolve", "topic": "fisher_protection" }] },
+      { "id": "C", "label": "要求协会停止干扰谈判", "response": "协会停止干扰谈判，改为在谈判大楼外连续鸣笛。", "effects": [{ "field": "fisher_pressure", "operation": "increment", "value": 3 }, { "field": "domestic_pressure", "operation": "increment", "value": 3 }], "debtActions": [{ "action": "break", "topic": "fisher_protection" }] }
+    ]
+  },
+  {
+    "id": "P14", "title": "盟友牵线的秘密渠道", "type": "reactive", "thread": ["Alliance", "Diplomacy"], "priority": 106, "weight": 1, "once": true, "phase": "settlement", "actorId": "envoy_albatross", "institutionId": "seabird_alliance", "afterAny": ["P10", "P11"], "debtTopics": ["ally_reciprocity"], "urgencyFields": ["ally_commitment", "escalation"],
+    "scene": "海鸟特使已安排一个不挂国旗的会议室。盟友愿意帮助双方同时走进去，前提是共和国记得谁替你们扶住了门。",
+    "choices": [
+      { "id": "A", "label": "接受调停并承诺未来回报", "response": "三方开始起草双边文件，盟友则开始起草下一份双边回报清单。", "effects": [{ "field": "diplomatic_channel", "operation": "increment", "value": 3 }, { "field": "escalation", "operation": "decrement", "value": 2 }], "debtActions": [{ "action": "resolve", "topic": "ally_reciprocity" }] },
+      { "id": "B", "label": "使用会议室但不承诺回报", "response": "特使说明会议室免费，桌椅、出口和会后声明的使用费另计。", "effects": [{ "field": "diplomatic_channel", "operation": "increment", "value": 2 }], "debtActions": [{ "action": "break", "topic": "ally_reciprocity" }] },
+      { "id": "C", "label": "坚持双边解决", "response": "盟友尊重双边主义，并在门外向双方分别提供建议。", "effects": [{ "field": "restraint", "operation": "increment", "value": 1 }, { "field": "ally_commitment", "operation": "decrement", "value": 1 }] }
+    ]
+  },
+  {
+    "id": "P15", "title": "临时协议", "type": "core", "thread": ["Diplomacy", "Settlement"], "priority": 160, "weight": 1, "once": true, "phase": "settlement", "actorId": "deputy_seal", "institutionId": "fox_foreign_ministry", "after": ["P12", "P13", "P14"], "debtTopics": ["ally_reciprocity", "diplomatic_restraint", "fisher_protection"], "memoryTopics": ["red_line", "crisis_wording"], "urgencyFields": ["escalation", "domestic_pressure"],
+    "scene": "谈判桌上有四份文本，每份都声称不影响主权、不构成先例，并且只在双方同意它存在时存在。这是结束“{{official_terms:last}}”的机会。",
+    "choices": [
+      { "id": "A", "label": "双方同时撤舰并释放渔船", "response": "协议签署后，双方同时宣布对方终于接受了自己从未明说的条件。", "requirements": [{ "field": "diplomatic_channel", "operator": ">=", "value": 2 }], "effects": [{ "field": "agreement_type", "operation": "set", "value": "mutual_withdrawal" }, { "field": "final_outcome", "operation": "set", "value": "mutual_victory" }, { "field": "crisis_status", "operation": "set", "value": "settled" }, { "field": "detained_boats", "operation": "set", "value": 0 }] },
+      { "id": "B", "label": "设立永久临时海域管理委员会", "response": "危机被交给一个拥有固定预算的临时机构，因此再也没有急迫解决的必要。", "effects": [{ "field": "agreement_type", "operation": "set", "value": "temporary_committee" }, { "field": "final_outcome", "operation": "set", "value": "frozen_committee" }, { "field": "crisis_status", "operation": "set", "value": "frozen" }] },
+      { "id": "C", "label": "我方单方暂停巡航换取释放", "response": "渔船回家，对方称这证明压力有效，我方称这证明克制有效。国内媒体称两个说法都证明外交部软弱。", "effects": [{ "field": "agreement_type", "operation": "set", "value": "unilateral_pause" }, { "field": "final_outcome", "operation": "set", "value": "domestic_defeat" }, { "field": "crisis_status", "operation": "set", "value": "cooled" }, { "field": "detained_boats", "operation": "set", "value": 0 }, { "field": "domestic_pressure", "operation": "increment", "value": 3 }] },
+      { "id": "D", "label": "先动员，再紧急签署停火文件", "response": "双方舰队在一次擦碰后立即签署《从未发生战争协议》，并同意不再讨论那声爆炸是否属于战争。", "requirements": [{ "field": "escalation", "operator": ">=", "value": 5 }], "effects": [{ "field": "agreement_type", "operation": "set", "value": "never_war_agreement" }, { "field": "final_outcome", "operation": "set", "value": "never_war" }, { "field": "crisis_status", "operation": "set", "value": "emergency_settlement" }, { "field": "detained_boats", "operation": "set", "value": 0 }] }
+    ]
+  },
+  {
+    "id": "P16", "title": "国内媒体宣布胜利或失败", "type": "reactive", "thread": ["Media", "Domestic", "History"], "priority": 150, "weight": 1, "once": true, "phase": "settlement", "actorId": "anchor_fox", "institutionId": "fox_media", "after": ["P15"], "urgencyFields": ["domestic_pressure", "media_pressure"],
+    "scene": "协议尚未干透，电视台已准备了‘历史性胜利’和‘外交上的历史性失败’两套片头。主播询问外交部希望先播哪一套。",
+    "choices": [
+      { "id": "A", "label": "宣布历史性海洋维权胜利", "response": "胜利片头播出，协议中所有不便解释的条款被字幕遮住。", "effects": [{ "field": "official_terms", "operation": "push", "value": "历史性海洋维权胜利" }, { "field": "domestic_pressure", "operation": "decrement", "value": 1 }] },
+      { "id": "B", "label": "宣布和平与理性的共同胜利", "response": "电视台将‘共同胜利’翻译成‘我方胜利，对方也可以这样理解’。", "effects": [{ "field": "official_terms", "operation": "push", "value": "和平与理性的共同胜利" }, { "field": "restraint", "operation": "increment", "value": 1 }] },
+      { "id": "C", "label": "不做胜负判断", "response": "电视台将拒绝判断本身判断为一种值得怀疑的失败。", "effects": [{ "field": "media_pressure", "operation": "increment", "value": 2 }] }
+    ]
+  },
+  {
+    "id": "P17", "title": "双方都获胜的和平", "type": "ending", "thread": ["History", "Diplomacy"], "priority": 200, "weight": 1, "once": true, "phase": "ending", "actorId": "deputy_seal", "institutionId": "fox_foreign_ministry", "requirements": [{ "field": "final_outcome", "operator": "==", "value": "mutual_victory" }],
+    "scene": "{{history:evaluation}} 双方共同维护了和平，并各自保留了一份证明和平完全由自己单独维护的档案。",
+    "choices": [{ "id": "A", "label": "将双重胜利归档", "response": "海峡恢复平静，历史继续维持双方都能接受的距离。", "effects": [{ "field": "prototype_complete", "operation": "set", "value": true }] }]
+  },
+  {
+    "id": "P18", "title": "永久临时委员会", "type": "ending", "thread": ["History", "Bureaucracy"], "priority": 200, "weight": 1, "once": true, "phase": "ending", "actorId": "deputy_seal", "institutionId": "fox_foreign_ministry", "requirements": [{ "field": "final_outcome", "operator": "==", "value": "frozen_committee" }],
+    "scene": "{{history:evaluation}} 委员会每年都确认临时安排尚未成熟到可以结束，从而证明了自己的永久必要性。",
+    "choices": [{ "id": "A", "label": "批准下届临时会议", "response": "危机进入稳定预算周期。", "effects": [{ "field": "prototype_complete", "operation": "set", "value": true }] }]
+  },
+  {
+    "id": "P19", "title": "成功降温，国内判定软弱", "type": "ending", "thread": ["History", "Domestic"], "priority": 200, "weight": 1, "once": true, "phase": "ending", "actorId": "anchor_fox", "institutionId": "fox_media", "requirements": [{ "field": "final_outcome", "operator": "==", "value": "domestic_defeat" }],
+    "scene": "{{history:evaluation}} 你带回了渔民、阻止了开火，并因此被一档没有人需要上前线的电视节目评为缺乏勇气。",
+    "choices": [{ "id": "A", "label": "接受外交胜利与政治失败", "response": "你保住了和平，而和平没有投票权。", "effects": [{ "field": "prototype_complete", "operation": "set", "value": true }] }]
+  },
+  {
+    "id": "P20", "title": "从未发生战争协议", "type": "ending", "thread": ["History", "Military"], "priority": 200, "weight": 1, "once": true, "phase": "ending", "actorId": "admiral_wolf", "institutionId": "fox_navy", "requirements": [{ "field": "final_outcome", "operator": "==", "value": "never_war" }],
+    "scene": "{{history:evaluation}} 双方海军同意今后使用不同频率发送警告，以避免再次同时听见彼此。",
+    "choices": [{ "id": "A", "label": "签署并否认战争曾经开始", "response": "战争在法律上没有发生，因此和平在政治上也没有被打断。", "effects": [{ "field": "prototype_complete", "operation": "set", "value": true }] }]
+  }
+]

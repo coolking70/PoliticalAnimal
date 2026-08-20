@@ -3,7 +3,7 @@ import { evaluateCondition } from '../src/engine/conditionEvaluator';
 import { applyEffects } from '../src/engine/effectExecutor';
 import { selectEvent } from '../src/engine/eventSelector';
 import { parseSave, serializeSave } from '../src/engine/saveEngine';
-import { choose, createGame, dismissCurrentFraming, events, getCurrentEvent, getCurrentFraming, getEligible } from '../src/store/gameStore';
+import { choose, createGame, dismissCurrentFraming, getCurrentEvent, getCurrentFraming, getEligible } from '../src/store/gameStore';
 import { addMemory, findMemory, getPublicPromises } from '../src/engine/memoryEngine';
 import { advanceDebtPressure, applyDebtActions, createDebt, getDebtIntensity, getDebtPressure, getDebtPressureCap } from '../src/engine/debtEngine';
 import { defaultScenarioId, getScenarioBundle, listScenarioIds } from '../src/content/scenarioRegistry';
@@ -79,6 +79,7 @@ describe('political memory and debt', () => {
 });
 
 describe('reactive event selector', () => {
+  const educationEvents = getScenarioBundle(defaultScenarioId).events;
   it('exposes debt, memory, urgency, thread, and repetition weight components', () => {
     const debt = createDebt([], {
       creditor: 'teachers_union', type: 'staffing_promise', topic: 'teacher_support', strength: 4,
@@ -89,7 +90,7 @@ describe('reactive event selector', () => {
       importance: 5, tags: ['promise'],
     }, 'E01', 1);
     const selected = selectEvent(
-      events,
+      educationEvents,
       { ...getScenarioBundle(defaultScenarioId).scenario.initialState, phase: 'backlash', teacher_unrest: 4, student_unrest: 3 },
       ['E01', 'E07', 'E11', 'E12', 'E15'],
       42,
@@ -108,8 +109,8 @@ describe('reactive event selector', () => {
 
   it('same seed and state remain deterministic', () => {
     const game = createGame(872631);
-    const first = selectEvent(events, game.worldState, [], game.rngState);
-    const second = selectEvent(events, game.worldState, [], game.rngState);
+    const first = selectEvent(educationEvents, game.worldState, [], game.rngState);
+    const second = selectEvent(educationEvents, game.worldState, [], game.rngState);
     expect(first.event?.id).toBe(second.event?.id);
     expect(first.rngState).toBe(second.rngState);
   });
@@ -123,8 +124,8 @@ describe('reactive event selector', () => {
     const high = createDebt([], { ...template, pressure: 7 }, 'E07', 7);
     const state = { ...getScenarioBundle(defaultScenarioId).scenario.initialState, phase: 'backlash', teacher_unrest: 4 };
     const completed = ['E01', 'E07', 'E11', 'E12', 'E15'];
-    const lowWeight = selectEvent(events, state, completed, 5, [], low).weighted.find((item) => item.event.id === 'E16')!.finalWeight;
-    const highWeight = selectEvent(events, state, completed, 5, [], high).weighted.find((item) => item.event.id === 'E16')!.finalWeight;
+    const lowWeight = selectEvent(educationEvents, state, completed, 5, [], low).weighted.find((item) => item.event.id === 'E16')!.finalWeight;
+    const highWeight = selectEvent(educationEvents, state, completed, 5, [], high).weighted.find((item) => item.event.id === 'E16')!.finalWeight;
     expect(highWeight).toBeGreaterThan(lowWeight);
   });
 });
@@ -144,7 +145,7 @@ describe('scenario runtime', () => {
   }
 
   it('loads scenarios through the registry without hard-coded save ids', () => {
-    expect(listScenarioIds()).toContain(defaultScenarioId);
+    expect(listScenarioIds()).toEqual(['education_demo', 'penguin_strait']);
     const game = createGame(1, defaultScenarioId);
     expect(game.scenarioId).toBe(defaultScenarioId);
   });
@@ -233,5 +234,72 @@ describe('scenario runtime', () => {
     const completed = run(22, 1);
     expect(parseSave(serializeSave(completed))).toEqual(completed);
     expect(() => parseSave(JSON.stringify({ ...completed, saveVersion: 3, engineVersion: '0.3.0' }))).toThrow('存档版本不受支持');
+  });
+});
+
+describe('penguin strait cross-scenario runtime', () => {
+  const scenarioId = 'penguin_strait';
+  const bundle = getScenarioBundle(scenarioId);
+
+  it('varies diplomacy, navy, fishing, and media order within the posture phase', () => {
+    const firstPostureEvents = new Set<string>();
+    for (let seed = 1; seed <= 50; seed += 1) {
+      let game = createGame(seed, scenarioId);
+      game = choose(game, getCurrentEvent(game)!.choices[0]);
+      firstPostureEvents.add(game.currentEventId!);
+    }
+    expect(firstPostureEvents.size).toBeGreaterThan(2);
+    expect([...firstPostureEvents].every((id) => ['P02', 'P03', 'P04', 'P05'].includes(id))).toBe(true);
+  });
+
+  it('raises the fishing pressure event weight from active fisher debt', () => {
+    const debtTemplate = {
+      creditor: 'strait_fishers', type: 'protection_promise', topic: 'fisher_protection', strength: 4,
+      description: '渔民等待捕鱼权保护。', tags: ['fisheries'],
+    };
+    const state = { ...bundle.scenario.initialState, phase: 'settlement', fisher_pressure: 4, domestic_pressure: 3 };
+    const completed = Array.from({ length: 11 }, (_, index) => `P${String(index + 1).padStart(2, '0')}`);
+    const low = createDebt([], { ...debtTemplate, pressure: 1 }, 'P04', 4);
+    const high = createDebt([], { ...debtTemplate, pressure: 7 }, 'P04', 4);
+    const lowWeight = selectEvent(bundle.events, state, completed, 9, [], low).weighted.find((item) => item.event.id === 'P13')!.finalWeight;
+    const highWeight = selectEvent(bundle.events, state, completed, 9, [], high).weighted.find((item) => item.event.id === 'P13')!.finalWeight;
+    expect(highWeight).toBeGreaterThan(lowWeight);
+  });
+
+  it('reuses selected official wording and the actual public red line later', () => {
+    const decisions: Record<string, string> = { P02: 'D', P07: 'B' };
+    let game = createGame(73, scenarioId);
+    let sawOpponentWording = false;
+    while (game.currentEventId !== 'P09') {
+      const event = getCurrentEvent(game)!;
+      if (event.id === 'P06') {
+        expect(event.scene).toContain('友好国家间技术性地理分歧');
+        sawOpponentWording = true;
+      }
+      game = choose(game, event.choices.find((choice) => choice.id === decisions[event.id]) ?? event.choices[0]);
+    }
+    expect(sawOpponentWording).toBe(true);
+    expect(getCurrentEvent(game)!.scene).toContain('共和国的红线是任何对我国渔民的实际伤害');
+  });
+
+  it('reaches all four configured endings through the shared ending mechanism', () => {
+    const expected: Record<string, string> = { A: 'P17', B: 'P18', C: 'P19', D: 'P20' };
+    for (const [accordChoice, endingId] of Object.entries(expected)) {
+      let game = createGame(91, scenarioId);
+      let guard = 0;
+      while (game.status === 'playing' && guard < 40) {
+        const event = getCurrentEvent(game)!;
+        if (event.type === 'ending') {
+          expect(event.scene).not.toContain('{{history:evaluation}}');
+          expect(event.scene).not.toContain('历史尚未收到');
+        }
+        const desired = event.id === 'P15' ? event.choices.find((choice) => choice.id === accordChoice) : undefined;
+        expect(event.id !== 'P15' || desired, `P15 choice ${accordChoice} should be eligible`).toBeTruthy();
+        game = choose(game, desired ?? event.choices[0]);
+        guard += 1;
+      }
+      expect(game.status).toBe('completed');
+      expect(game.completedEvents).toContain(endingId);
+    }
   });
 });

@@ -2,6 +2,8 @@
   "id": "education_demo",
   "title": "狐狸共和国：伟大的教育改革",
   "subtitle": "Stage 2 · Narrative Framing Layer",
+  "playerRole": "狐狸共和国总统",
+  "workspaceLabel": "总统办公室",
   "opening": "共和国历 34 年，你刚刚当选总统。窗外的广场仍在重复你的竞选口号：让每一只动物都拥有独立思考的能力。",
   "phases": [
     { "id": "mandate", "label": "竞选授权" },
@@ -10,6 +12,27 @@
     { "id": "backlash", "label": "社会反作用" },
     { "id": "reckoning", "label": "最终清算" },
     { "id": "ending", "label": "历史评价" }
+  ],
+  "historyEvaluations": [
+    {
+      "requirements": [{ "field": "final_policy", "operator": "==", "value": "permanent_reform" }],
+      "text": "五年后的共和国教材写道：本届政府把临时改革建设成了永久机构。官方改革指标在五年内增长了 42%。历史把这段时期称为“{{official_terms:last}}”。"
+    },
+    {
+      "requirements": [{ "field": "final_policy", "operator": "==", "value": "local_autonomy" }],
+      "text": "五年后的共和国教材写道：本届政府以中央退出证明了地方多样性的胜利。历史把这段时期称为“{{official_terms:last}}”。"
+    },
+    {
+      "requirements": [{ "field": "final_policy", "operator": "==", "value": "expert_rule" }],
+      "text": "五年后的共和国教材写道：本届政府让专家从解释教育开始，逐步学会解释国家。官方改革指标在五年内增长了 42%。"
+    },
+    {
+      "requirements": [{ "field": "standardized_exam", "operator": "==", "value": true }],
+      "text": "五年后的共和国教材写道：本届政府建立了全国统一的独立思考标准。官方改革指标在五年内增长了 42%。"
+    },
+    {
+      "text": "五年后的共和国教材写道：本届政府成功避免了用同一种方法要求所有动物保持不同。由于一些政策拒绝被数字定义，它们取得了无法被数字否认的成功。"
+    }
   ],
   "stateSchema": {
     "phase": "string",

@@ -1,0 +1,9 @@
+[
+  { "id": "fox_foreign_ministry", "name": "狐狸共和国外交部", "mission": "让国家立场保持清晰且可修订", "institutional_interest": "避免战争并确保避免战争看起来像胜利" },
+  { "id": "fox_navy", "name": "共和国海军", "mission": "保护领海与可以被解释为领海的海域", "institutional_interest": "获得巡航授权且不独自承担后果" },
+  { "id": "strait_fishers", "name": "海峡渔民协会", "mission": "让渔船和渔获都能回家", "institutional_interest": "获得捕鱼权、赔偿与公开尊重" },
+  { "id": "fox_media", "name": "共和国海峡媒体网", "mission": "在开火前为危机提供头条", "institutional_interest": "把模糊海域改写成清晰立场" },
+  { "id": "penguin_republic", "name": "企鹅海上共和国", "mission": "保护北矶岛及其周边历史水域", "institutional_interest": "不在国内看起来后退，也不在海上真正前进" },
+  { "id": "seabird_alliance", "name": "海鸟共同防务会", "mission": "维持区域稳定", "institutional_interest": "用当前支持换取未来基地权与外交回报" },
+  { "id": "world_observers", "name": "国际海洋观察网", "mission": "记录各国对同一块海面的不同说法", "institutional_interest": "让每次误判都有可供引用的外国版本" }
+]

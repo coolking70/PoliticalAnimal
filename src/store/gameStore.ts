@@ -9,9 +9,6 @@ import { allConditionsMatch } from '../engine/conditionEvaluator';
 import { defaultScenarioId, getScenarioBundle } from '../content/scenarioRegistry';
 import { resolveFraming, selectFramings } from '../engine/framingEngine';
 
-export const scenario = getScenarioBundle(defaultScenarioId).scenario;
-export const events = getScenarioBundle(defaultScenarioId).events;
-
 function advancePhase(
   bundle: ScenarioBundle,
   state: WorldState,
@@ -128,7 +125,7 @@ export function getCurrentEvent(save: GameSave): ResolvedGameEvent | null {
     actorEmoji: actor.emoji,
     actorRole: actor.role,
     institutionName: institution.name,
-    scene: renderNarrativeTemplate(event.scene, save),
+    scene: renderNarrativeTemplate(event.scene, save, undefined, bundle.scenario),
     choices: event.choices.filter((choice) => allConditionsMatch(choice.requirements, save.worldState, save.memories, save.debts)),
   };
 }

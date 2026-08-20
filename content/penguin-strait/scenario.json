@@ -1,0 +1,80 @@
+{
+  "id": "penguin_strait",
+  "title": "企鹅海峡危机",
+  "subtitle": "Stage 3 · Cross-Scenario Validation",
+  "playerRole": "狐狸共和国外交部长",
+  "workspaceLabel": "外交部战情室",
+  "opening": "凌晨四点，企鹅海上共和国扣押了两艘狐狸渔船。争议小岛上没有居民，只有一块被两国地图同时印成本国颜色的石头。总统要求你在开盘前解决问题，或至少为它选一个不会开战的名字。",
+  "phases": [
+    { "id": "spark", "label": "扣船事件" },
+    { "id": "posture", "label": "立场成形" },
+    { "id": "escalation", "label": "红线测试" },
+    { "id": "settlement", "label": "危机收束" },
+    { "id": "ending", "label": "海峡后来史" }
+  ],
+  "historyEvaluations": [
+    {
+      "requirements": [{ "field": "final_outcome", "operator": "==", "value": "mutual_victory" }],
+      "text": "十年后的外交史写道：企鹅海峡危机以和平协议结束，双方各自取得了对方从未承认过的全部让步。危机官方名称为“{{official_terms:last}}”。"
+    },
+    {
+      "requirements": [{ "field": "final_outcome", "operator": "==", "value": "frozen_committee" }],
+      "text": "十年后，临时海域管理委员会仍在讨论第一次会议的永久临时议程。危机没有解决，因而成为两国最稳定的双边机制。"
+    },
+    {
+      "requirements": [{ "field": "final_outcome", "operator": "==", "value": "domestic_defeat" }],
+      "text": "外交档案认为你成功阻止了战争；国内报纸认为你失去了一场本来没有人打算发动的战争。两种记录至今都宣布自己获胜。"
+    },
+    {
+      "requirements": [{ "field": "final_outcome", "operator": "==", "value": "never_war" }],
+      "text": "两国在事故升级后签署《从未发生战争协议》。后来的地图用虚线标出小岛，并用实线删除了责任。"
+    },
+    { "text": "海峡危机最终被归档为一次成功的未定义事件。" }
+  ],
+  "stateSchema": {
+    "phase": "string",
+    "crisis_status": "string",
+    "detained_boats": "number",
+    "escalation": "number",
+    "naval_posture": "number",
+    "domestic_pressure": "number",
+    "fisher_pressure": "number",
+    "media_pressure": "number",
+    "opponent_tension": "number",
+    "ally_commitment": "number",
+    "diplomatic_channel": "number",
+    "restraint": "number",
+    "red_line_defined": "boolean",
+    "red_line_tested": "boolean",
+    "red_line_honored": "boolean",
+    "patrol_authorized": "boolean",
+    "cable_leaked": "boolean",
+    "official_terms": "string[]",
+    "agreement_type": "string",
+    "final_outcome": "string",
+    "prototype_complete": "boolean"
+  },
+  "initialState": {
+    "phase": "spark",
+    "crisis_status": "detention",
+    "detained_boats": 2,
+    "escalation": 1,
+    "naval_posture": 0,
+    "domestic_pressure": 0,
+    "fisher_pressure": 0,
+    "media_pressure": 0,
+    "opponent_tension": 0,
+    "ally_commitment": 0,
+    "diplomatic_channel": 0,
+    "restraint": 0,
+    "red_line_defined": false,
+    "red_line_tested": false,
+    "red_line_honored": false,
+    "patrol_authorized": false,
+    "cable_leaked": false,
+    "official_terms": [],
+    "agreement_type": "unset",
+    "final_outcome": "unset",
+    "prototype_complete": false
+  }
+}

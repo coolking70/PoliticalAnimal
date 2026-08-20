@@ -33,7 +33,7 @@ export function resolveFraming(
     : undefined;
   const history = [...save.history].reverse().find((entry) => entry.eventId === framing.eventId);
   const render = (template: string | undefined) => template
-    ? renderNarrativeTemplate(template, save, history)
+    ? renderNarrativeTemplate(template, save, history, bundle.scenario)
     : undefined;
   return {
     ...framing,
