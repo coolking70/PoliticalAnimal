@@ -112,6 +112,37 @@ export interface GameEvent {
   choices: Choice[];
 }
 
+export type FramingType = 'newspaper' | 'tv_news' | 'government_memo' | 'internal_memo';
+
+export interface FramingSource {
+  actorId?: string;
+  institutionId?: string;
+  label?: string;
+}
+
+export interface NarrativeFraming {
+  id: string;
+  eventId: string;
+  type: FramingType;
+  stance: 'government' | 'media' | 'opposition' | 'institution' | 'foreign_observer';
+  source: FramingSource;
+  choiceIds?: string[];
+  requirements?: Condition[];
+  eyebrow?: string;
+  title: string;
+  body: string;
+  footer?: string;
+}
+
+export interface ResolvedNarrativeFraming extends NarrativeFraming {
+  sourceName: string;
+  sourceEmoji?: string;
+  renderedEyebrow?: string;
+  renderedTitle: string;
+  renderedBody: string;
+  renderedFooter?: string;
+}
+
 export interface ResolvedGameEvent extends GameEvent {
   actorName: string;
   actorEmoji: string;
@@ -130,8 +161,8 @@ export interface HistoryEntry {
 }
 
 export interface GameSave {
-  saveVersion: 3;
-  engineVersion: '0.3.0';
+  saveVersion: 4;
+  engineVersion: '0.4.0';
   scenarioId: string;
   status: 'playing' | 'completed';
   seed: number;
@@ -143,6 +174,8 @@ export interface GameSave {
   debts: PoliticalDebt[];
   completedEvents: string[];
   currentEventId: string | null;
+  pendingFramingIds: string[];
+  seenFramingIds: string[];
 }
 
 export type StateValueType = 'number' | 'boolean' | 'string' | 'string[]';
@@ -167,6 +200,7 @@ export interface ScenarioBundle {
   actors: Actor[];
   institutions: Institution[];
   events: GameEvent[];
+  framings: NarrativeFraming[];
 }
 
 export interface EventWeightBreakdown {

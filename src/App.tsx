@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { GameSave } from './models/game';
-import { getCurrentEvent, getWeightedCandidates, createGame, choose, scenario } from './store/gameStore';
+import type { GameSave, ResolvedNarrativeFraming } from './models/game';
+import { dismissCurrentFraming, getCurrentEvent, getCurrentFraming, getWeightedCandidates, createGame, choose, scenario } from './store/gameStore';
 import { loadFromStorage, saveToStorage } from './engine/saveEngine';
 import { getDebtPressureCap } from './engine/debtEngine';
 import './styles.css';
@@ -26,12 +26,47 @@ function randomSeed() {
   return Math.floor(Math.random() * 900000) + 100000;
 }
 
+const framingLabels = {
+  newspaper: { format: '报纸', action: '翻过这一版' },
+  tv_news: { format: '电视新闻', action: '结束收看' },
+  government_memo: { format: '政府文件', action: '阅后归档' },
+  internal_memo: { format: '内部备忘录', action: '阅后收起' },
+} as const;
+
+function FramingView({ framing, seenCount, pendingCount, onDismiss }: {
+  framing: ResolvedNarrativeFraming;
+  seenCount: number;
+  pendingCount: number;
+  onDismiss: () => void;
+}) {
+  const labels = framingLabels[framing.type];
+  return (
+    <div className={`framing-stage framing-${framing.type}`} data-framing-id={framing.id}>
+      <article className="framing-document">
+        <header className="framing-header">
+          <div className="framing-source"><span>{framing.sourceEmoji ?? '◆'}</span><div><b>{framing.sourceName}</b><small>{labels.format} · {framing.stance.replace('_', ' ')}</small></div></div>
+          <span className="framing-counter">已阅 {seenCount} · 待阅 {pendingCount}</span>
+        </header>
+        <div className="framing-rule" />
+        {framing.renderedEyebrow && <p className="framing-eyebrow">{framing.renderedEyebrow}</p>}
+        <h2>{framing.renderedTitle}</h2>
+        <p className="framing-body">{framing.renderedBody}</p>
+        {framing.renderedFooter && <footer className="framing-footer">{framing.renderedFooter}</footer>}
+        <div className="framing-stamp">{framing.type === 'tv_news' ? 'ON AIR' : framing.type === 'newspaper' ? '号外' : framing.type === 'government_memo' ? '已阅' : '内部'}</div>
+      </article>
+      <button className="primary-button framing-dismiss" onClick={onDismiss}>{labels.action} →</button>
+      <p className="framing-hint">Framing 只改变事实被看见的方式，不占用剧情回合。</p>
+    </div>
+  );
+}
+
 export default function App() {
   const [seed, setSeed] = useState(872631);
   const [game, setGame] = useState<GameSave | null>(null);
   const [tab, setTab] = useState<Tab>('scene');
   const [notice, setNotice] = useState('');
   const current = game ? getCurrentEvent(game) : null;
+  const currentFraming = game ? getCurrentFraming(game) : null;
   const weightedCandidates = useMemo(() => game ? getWeightedCandidates(game) : [], [game]);
 
   const begin = (nextSeed = seed) => {
@@ -42,16 +77,26 @@ export default function App() {
   };
 
   const selectChoice = (choiceId: string) => {
-    if (!game || !current) return;
+    if (!game || !current || currentFraming) return;
     const choice = current.choices.find((item) => item.id === choiceId);
     if (!choice) return;
     try {
-      setGame(choose(game, choice));
-      setNotice(choice.response);
-      window.setTimeout(() => setNotice(''), 3600);
+      const next = choose(game, choice);
+      setGame(next);
+      if (next.pendingFramingIds.length) setNotice('');
+      else {
+        setNotice(choice.response);
+        window.setTimeout(() => setNotice(''), 3600);
+      }
     } catch (error) {
       setNotice(error instanceof Error ? error.message : '剧情推进失败');
     }
+  };
+
+  const dismissFraming = () => {
+    if (!game || !currentFraming) return;
+    setGame(dismissCurrentFraming(game));
+    setNotice('');
   };
 
   const save = () => {
@@ -85,6 +130,11 @@ export default function App() {
         setTab(tabs[(index + direction + tabs.length) % tabs.length].id);
         return;
       }
+      if (currentFraming && tab === 'scene' && ['enter', ' '].includes(event.key.toLowerCase())) {
+        event.preventDefault();
+        dismissFraming();
+        return;
+      }
       const shortcutIndex = event.key >= '1' && event.key <= '9'
         ? Number(event.key) - 1
         : event.key.toLowerCase() === 'b' ? 1
@@ -115,6 +165,16 @@ export default function App() {
         scene: current.scene,
         choices: current.choices.map((choice, index) => ({ key: index + 1, id: choice.id, label: choice.label })),
       } : null,
+      framing: currentFraming ? {
+        id: currentFraming.id,
+        type: currentFraming.type,
+        stance: currentFraming.stance,
+        source: currentFraming.sourceName,
+        title: currentFraming.renderedTitle,
+        body: currentFraming.renderedBody,
+        pendingCount: game.pendingFramingIds.length,
+        control: 'Enter/Space or framing button to continue',
+      } : null,
       worldState: game.worldState,
       completedEvents: game.completedEvents,
       historyCount: game.history.length,
@@ -123,7 +183,7 @@ export default function App() {
       eligibleEvents: weightedCandidates.map((candidate) => ({ id: candidate.event.id, finalWeight: Number(candidate.finalWeight.toFixed(2)) })),
     } : { mode: 'menu', seed });
     window.advanceTime = () => undefined;
-  }, [game, current, tab, weightedCandidates, seed]);
+  }, [game, current, currentFraming, tab, weightedCandidates, seed]);
 
   return (
     <>
@@ -144,7 +204,7 @@ export default function App() {
         {!game ? (
           <main className="menu-card">
             <div className="seal">🦊</div>
-            <p className="eyebrow gold">STAGE 1 · MEMORY &amp; DEBT</p>
+            <p className="eyebrow gold">STAGE 2 · NARRATIVE FRAMING</p>
             <h2>{scenario.title}</h2>
             <p className="menu-copy">{scenario.opening}</p>
             <label className="seed-field">
@@ -170,10 +230,13 @@ export default function App() {
 
             <section className="content-panel">
               {notice && <div className="notice">{notice}</div>}
-              {tab === 'scene' && game.status === 'completed' && (
+              {tab === 'scene' && currentFraming && (
+                <FramingView framing={currentFraming} seenCount={game.seenFramingIds.length} pendingCount={game.pendingFramingIds.length} onDismiss={dismissFraming} />
+              )}
+              {tab === 'scene' && !currentFraming && game.status === 'completed' && (
                 <div className="menu-card completion-card"><div className="seal">📚</div><p className="eyebrow gold">SCENARIO COMPLETE</p><h2>本局已经进入历史</h2><p className="menu-copy">最终事件已正常结算，所有选择、记忆、债务与历史记录均保留在当前存档中。</p><button className="primary-button" onClick={() => begin(seed)}>使用相同 Seed 重新开始</button></div>
               )}
-              {tab === 'scene' && current && (
+              {tab === 'scene' && !currentFraming && current && (
                 <div className="scene-view">
                   <div className="event-meta"><span>{current.type.toUpperCase()}</span><span>{current.thread.join(' / ')}</span><span>{current.id}</span></div>
                   <div className="speaker-block">
@@ -213,12 +276,12 @@ export default function App() {
                 <div className="page-view"><p className="eyebrow gold">SETTINGS</p><h2>设置</h2><div className="settings-row"><div><strong>全屏模式</strong><p>演说需要更大的舞台。</p></div><button className="secondary-button" onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()}>切换（F）</button></div><div className="settings-row"><div><strong>重新开始</strong><p>使用相同 Seed 重演另一种历史。</p></div><button className="secondary-button" onClick={() => begin(seed)}>新一届政府</button></div></div>
               )}
               {tab === 'debug' && (
-                <div className="page-view debug-view"><p className="eyebrow gold">ENGINE INSPECTOR</p><h2>Debug 面板</h2><div className="debug-grid"><section><h3>运行状态</h3><pre>{JSON.stringify({ status: game.status, phase: game.worldState.phase, turn: game.turn, scenarioId: game.scenarioId, seed: game.seed, rngState: game.rngState, currentEvent: game.currentEventId, completedEvents: game.completedEvents }, null, 2)}</pre></section><section><h3>候选事件权重</h3><pre>{JSON.stringify(weightedCandidates.map((candidate) => ({ id: candidate.event.id, base: candidate.baseWeight, priority: candidate.priorityBonus, debt: Number(candidate.debtBonus.toFixed(2)), memory: Number(candidate.memoryBonus.toFixed(2)), thread: candidate.threadBonus, urgency: Number(candidate.urgencyBonus.toFixed(2)), repetition: candidate.repetitionPenalty, final: Number(candidate.finalWeight.toFixed(2)) })), null, 2)}</pre></section><section><h3>World State</h3><pre>{JSON.stringify(game.worldState, null, 2)}</pre></section><section><h3>Memories</h3><pre>{JSON.stringify(game.memories, null, 2)}</pre></section><section><h3>Debts</h3><pre>{JSON.stringify(game.debts, null, 2)}</pre></section></div></div>
+                <div className="page-view debug-view"><p className="eyebrow gold">ENGINE INSPECTOR</p><h2>Debug 面板</h2><div className="debug-grid"><section><h3>运行状态</h3><pre>{JSON.stringify({ status: game.status, phase: game.worldState.phase, turn: game.turn, scenarioId: game.scenarioId, seed: game.seed, rngState: game.rngState, currentEvent: game.currentEventId, completedEvents: game.completedEvents, pendingFramingIds: game.pendingFramingIds, seenFramingIds: game.seenFramingIds }, null, 2)}</pre></section><section><h3>候选事件权重</h3><pre>{JSON.stringify(weightedCandidates.map((candidate) => ({ id: candidate.event.id, base: candidate.baseWeight, priority: candidate.priorityBonus, debt: Number(candidate.debtBonus.toFixed(2)), memory: Number(candidate.memoryBonus.toFixed(2)), thread: candidate.threadBonus, urgency: Number(candidate.urgencyBonus.toFixed(2)), repetition: candidate.repetitionPenalty, final: Number(candidate.finalWeight.toFixed(2)) })), null, 2)}</pre></section><section><h3>World State</h3><pre>{JSON.stringify(game.worldState, null, 2)}</pre></section><section><h3>Memories</h3><pre>{JSON.stringify(game.memories, null, 2)}</pre></section><section><h3>Debts</h3><pre>{JSON.stringify(game.debts, null, 2)}</pre></section></div></div>
               )}
             </section>
           </main>
         )}
-        <footer><span>原型版本 0.3.0 · Stage 1.1</span><span>决定会结束，制度会留下。</span></footer>
+        <footer><span>原型版本 0.4.0 · Stage 2</span><span>事实发生一次，叙事可以反复修订。</span></footer>
       </div>
     </>
   );

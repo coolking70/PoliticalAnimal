@@ -28,12 +28,29 @@ describe('education demo content', () => {
     expect(codes).toContain('invalid_numeric_effect');
   });
 
+  it('validates framing event, source, choice, and template references', () => {
+    const broken = structuredClone(getScenarioBundle(defaultScenarioId));
+    broken.framings[0].eventId = 'E404';
+    broken.framings[0].source.actorId = 'missing_publisher';
+    broken.framings[0].choiceIds = ['Z'];
+    broken.framings[0].body = '{{state:student_unrst}}';
+    const codes = validateScenarioBundle(broken).map((issue) => issue.code);
+    expect(codes).toContain('unknown_framing_event');
+    expect(codes).toContain('unknown_framing_actor');
+    expect(codes).toContain('unknown_framing_state_field');
+  });
+
   it('contains E01–E20 and a formal ending', () => {
     const events = getScenarioBundle(defaultScenarioId).events;
     for (let index = 1; index <= 20; index += 1) {
       expect(events.some((event) => event.id === `E${String(index).padStart(2, '0')}`)).toBe(true);
     }
     expect(events.some((event) => event.type === 'ending')).toBe(true);
+    const framings = getScenarioBundle(defaultScenarioId).framings;
+    expect(new Set(framings.map((framing) => framing.type))).toEqual(new Set(['newspaper', 'tv_news', 'government_memo', 'internal_memo']));
+    for (const eventId of ['E05', 'E12', 'E13', 'E14', 'E16', 'E17', 'E20']) {
+      expect(framings.some((framing) => framing.eventId === eventId), `${eventId} lacks framing`).toBe(true);
+    }
   });
 
   it('10,000 seeded bots reach a completed ending with varied event order', () => {

@@ -1,7 +1,7 @@
 {
   "id": "education_demo",
   "title": "狐狸共和国：伟大的教育改革",
-  "subtitle": "Stage 1.1 · Reactive Narrative Core",
+  "subtitle": "Stage 2 · Narrative Framing Layer",
   "opening": "共和国历 34 年，你刚刚当选总统。窗外的广场仍在重复你的竞选口号：让每一只动物都拥有独立思考的能力。",
   "phases": [
     { "id": "mandate", "label": "竞选授权" },

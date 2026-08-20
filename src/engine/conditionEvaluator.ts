@@ -34,7 +34,7 @@ export function evaluateCondition(
     return memories.some((memory) => memory.active && compare(memory[condition.field as keyof PoliticalMemory], condition));
   }
   if (condition.scope === 'debt') {
-    return debts.some((debt) => debt.status === 'active' && compare(debt[condition.field as keyof PoliticalDebt], condition));
+    return debts.some((debt) => compare(debt[condition.field as keyof PoliticalDebt], condition));
   }
   return compare(state[condition.field] as Primitive | undefined, condition);
 }

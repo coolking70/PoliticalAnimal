@@ -1,4 +1,4 @@
-import type { Choice, GameSave, ResolvedGameEvent, ScenarioBundle, WorldState } from '../models/game';
+import type { Choice, GameSave, ResolvedGameEvent, ResolvedNarrativeFraming, ScenarioBundle, WorldState } from '../models/game';
 import { applyEffects } from '../engine/effectExecutor';
 import { eligibleEvents, scoreEvents, selectEvent } from '../engine/eventSelector';
 import { normalizeSeed } from '../engine/rng';
@@ -7,6 +7,7 @@ import { advanceDebtPressure, applyDebtActions, createDebt } from '../engine/deb
 import { renderNarrativeTemplate } from '../engine/historyEngine';
 import { allConditionsMatch } from '../engine/conditionEvaluator';
 import { defaultScenarioId, getScenarioBundle } from '../content/scenarioRegistry';
+import { resolveFraming, selectFramings } from '../engine/framingEngine';
 
 export const scenario = getScenarioBundle(defaultScenarioId).scenario;
 export const events = getScenarioBundle(defaultScenarioId).events;
@@ -35,8 +36,8 @@ export function createGame(seed: number, scenarioId = defaultScenarioId): GameSa
   const selected = selectEvent(bundle.events, bundle.scenario.initialState, [], rngState);
   if (!selected.event) throw new Error('场景没有合法的开场事件');
   return {
-    saveVersion: 3,
-    engineVersion: '0.3.0',
+    saveVersion: 4,
+    engineVersion: '0.4.0',
     scenarioId,
     status: 'playing',
     seed: normalizeSeed(seed),
@@ -48,6 +49,8 @@ export function createGame(seed: number, scenarioId = defaultScenarioId): GameSa
     debts: [],
     completedEvents: [],
     currentEventId: selected.event.id,
+    pendingFramingIds: [],
+    seenFramingIds: [],
   };
 }
 
@@ -67,7 +70,7 @@ export function choose(save: GameSave, choice: Choice): GameSave {
     debts = createDebt(debts, template, current.id, save.turn + 1, index);
   }
   const completedEvents = [...save.completedEvents, current.id];
-  const history = [...save.history, {
+  const historyEntry = {
     turn: save.turn + 1,
     eventId: current.id,
     title: current.title,
@@ -75,14 +78,40 @@ export function choose(save: GameSave, choice: Choice): GameSave {
     choiceLabel: choice.label,
     response: choice.response,
     threads: current.thread,
-  }];
+  };
+  const history = [...save.history, historyEntry];
   const base = { ...save, turn: save.turn + 1, worldState, history, memories, debts, completedEvents };
-  if (current.type === 'ending') return { ...base, status: 'completed', currentEventId: null };
+  if (current.type === 'ending') {
+    const completed = { ...base, status: 'completed' as const, currentEventId: null };
+    const queued = selectFramings(bundle.framings, current.id, choice.id, completed);
+    return { ...completed, pendingFramingIds: [...completed.pendingFramingIds, ...queued.map((item) => item.id)] };
+  }
 
   worldState = advancePhase(bundle, worldState, completedEvents, memories, debts);
   const selected = selectEvent(bundle.events, worldState, completedEvents, save.rngState, memories, debts, history);
   if (!selected.event) throw new Error(`剧情在 ${String(worldState.phase)} 阶段进入死路：没有合法事件`);
-  return { ...base, rngState: selected.rngState, worldState, currentEventId: selected.event.id };
+  const next = { ...base, rngState: selected.rngState, worldState, currentEventId: selected.event.id };
+  const queued = selectFramings(bundle.framings, current.id, choice.id, next);
+  return { ...next, pendingFramingIds: [...next.pendingFramingIds, ...queued.map((item) => item.id)] };
+}
+
+export function getCurrentFraming(save: GameSave): ResolvedNarrativeFraming | null {
+  const id = save.pendingFramingIds[0];
+  if (!id) return null;
+  const bundle = getScenarioBundle(save.scenarioId);
+  const framing = bundle.framings.find((item) => item.id === id);
+  if (!framing) throw new Error(`Framing ${id} 不存在`);
+  return resolveFraming(framing, bundle, save);
+}
+
+export function dismissCurrentFraming(save: GameSave): GameSave {
+  const [current, ...pendingFramingIds] = save.pendingFramingIds;
+  if (!current) return save;
+  return {
+    ...save,
+    pendingFramingIds,
+    seenFramingIds: save.seenFramingIds.includes(current) ? save.seenFramingIds : [...save.seenFramingIds, current],
+  };
 }
 
 export function getCurrentEvent(save: GameSave): ResolvedGameEvent | null {

@@ -8,6 +8,7 @@ export interface ContentIssue {
 
 const memoryFields = new Set(['id', 'createdAtTurn', 'sourceEvent', 'speaker', 'topic', 'statement', 'public', 'importance', 'tags', 'active']);
 const debtFields = new Set(['id', 'sourceEvent', 'createdAtTurn', 'creditor', 'type', 'topic', 'strength', 'pressure', 'description', 'tags', 'status']);
+const framingTypes = new Set(['newspaper', 'tv_news', 'government_memo', 'internal_memo']);
 
 function valueMatchesType(value: unknown, type: StateValueType): boolean {
   if (type === 'string[]') return Array.isArray(value) && value.every((item) => typeof item === 'string');
@@ -34,12 +35,14 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
   const actorIds = bundle.actors.map((actor) => actor.id);
   const institutionIds = bundle.institutions.map((institution) => institution.id);
   const eventIds = bundle.events.map((event) => event.id);
+  const framingIds = bundle.framings.map((framing) => framing.id);
   const phaseIds = bundle.scenario.phases.map((phase) => phase.id);
   const stateFields = new Set(Object.keys(bundle.scenario.stateSchema));
 
   for (const id of duplicateValues(actorIds)) report('duplicate_actor', `actors.${id}`, `重复 actor id：${id}`);
   for (const id of duplicateValues(institutionIds)) report('duplicate_institution', `institutions.${id}`, `重复 institution id：${id}`);
   for (const id of duplicateValues(eventIds)) report('duplicate_event', `events.${id}`, `重复 event id：${id}`);
+  for (const id of duplicateValues(framingIds)) report('duplicate_framing', `framings.${id}`, `重复 framing id：${id}`);
   for (const id of duplicateValues(phaseIds)) report('duplicate_phase', `scenario.phases.${id}`, `重复 phase id：${id}`);
 
   for (const actor of bundle.actors) {
@@ -57,6 +60,16 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
 
   const phaseIndex = new Map(phaseIds.map((id, index) => [id, index]));
   const dependencyGraph = new Map<string, string[]>();
+  const checkCondition = (condition: Extract<Condition, { field: string }>, conditionPath: string) => {
+    if (condition.scope === 'memory' && !memoryFields.has(condition.field)) report('unknown_memory_field', conditionPath, `未知 Memory 字段：${condition.field}`);
+    else if (condition.scope === 'debt' && !debtFields.has(condition.field)) report('unknown_debt_field', conditionPath, `未知 Debt 字段：${condition.field}`);
+    else if (!condition.scope && !stateFields.has(condition.field)) report('unknown_state_field', conditionPath, `未知 World State 字段：${condition.field}`);
+    else if (!condition.scope) {
+      const type = bundle.scenario.stateSchema[condition.field];
+      if (['>', '>=', '<', '<='].includes(condition.operator) && type !== 'number') report('invalid_numeric_condition', conditionPath, `数值比较用于非 number 字段：${condition.field}`);
+      if (['contains', 'not_contains'].includes(condition.operator) && type !== 'string[]') report('invalid_contains_condition', conditionPath, `contains 用于非 string[] 字段：${condition.field}`);
+    }
+  };
   for (const event of bundle.events) {
     const path = `events.${event.id}`;
     if (!actorIds.includes(event.actorId)) report('unknown_actor', `${path}.actorId`, `未知 actor：${event.actorId}`);
@@ -81,16 +94,6 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
     }
     for (const reference of duplicateValues(dependencies)) report('duplicate_event_reference', path, `重复事件引用：${reference}`);
 
-    const checkCondition = (condition: Extract<Condition, { field: string }>, conditionPath: string) => {
-      if (condition.scope === 'memory' && !memoryFields.has(condition.field)) report('unknown_memory_field', conditionPath, `未知 Memory 字段：${condition.field}`);
-      else if (condition.scope === 'debt' && !debtFields.has(condition.field)) report('unknown_debt_field', conditionPath, `未知 Debt 字段：${condition.field}`);
-      else if (!condition.scope && !stateFields.has(condition.field)) report('unknown_state_field', conditionPath, `未知 World State 字段：${condition.field}`);
-      else if (!condition.scope) {
-        const type = bundle.scenario.stateSchema[condition.field];
-        if (['>', '>=', '<', '<='].includes(condition.operator) && type !== 'number') report('invalid_numeric_condition', conditionPath, `数值比较用于非 number 字段：${condition.field}`);
-        if (['contains', 'not_contains'].includes(condition.operator) && type !== 'string[]') report('invalid_contains_condition', conditionPath, `contains 用于非 string[] 字段：${condition.field}`);
-      }
-    };
     visitConditions(event.requirements, (condition) => checkCondition(condition, `${path}.requirements`));
     visitConditions(event.blockers, (condition) => checkCondition(condition, `${path}.blockers`));
     for (const field of event.urgencyFields ?? []) {
@@ -110,6 +113,35 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
         }
       }
     }
+  }
+
+  const checkTemplate = (template: string | undefined, path: string) => {
+    for (const match of template?.matchAll(/\{\{([^}]+)\}\}/g) ?? []) {
+      const [scope, key, field] = match[1].split(':');
+      if (scope === 'state' && !stateFields.has(key)) report('unknown_framing_state_field', path, `Framing 引用未知 World State：${key}`);
+      else if (scope === 'memory' && field && !memoryFields.has(field)) report('unknown_framing_memory_field', path, `Framing 引用未知 Memory 字段：${field}`);
+      else if (scope === 'debt' && field && !debtFields.has(field)) report('unknown_framing_debt_field', path, `Framing 引用未知 Debt 字段：${field}`);
+      else if (scope === 'choice' && !['id', 'label', 'response'].includes(key)) report('unknown_framing_choice_field', path, `Framing 引用未知 Choice 字段：${key}`);
+      else if (scope === 'official_terms' && key !== 'last') report('unknown_framing_official_terms', path, `Framing 引用非法 official_terms 选择器：${key}`);
+      else if (!['state', 'memory', 'debt', 'choice', 'official_terms', 'history'].includes(scope)) report('unknown_framing_template_scope', path, `Framing 引用未知模板 scope：${scope}`);
+      else if (scope === 'history' && key !== 'evaluation') report('unknown_framing_history_field', path, `Framing 引用未知 History 字段：${key}`);
+    }
+  };
+  for (const framing of bundle.framings) {
+    const path = `framings.${framing.id}`;
+    const event = bundle.events.find((item) => item.id === framing.eventId);
+    if (!event) report('unknown_framing_event', `${path}.eventId`, `Framing 引用未知 event：${framing.eventId}`);
+    if (!framingTypes.has(framing.type)) report('unknown_framing_type', `${path}.type`, `未知 framing type：${framing.type}`);
+    if (!framing.source.actorId && !framing.source.institutionId && !framing.source.label) report('missing_framing_source', `${path}.source`, 'Framing 缺少来源');
+    if (framing.source.actorId && !actorIds.includes(framing.source.actorId)) report('unknown_framing_actor', `${path}.source.actorId`, `Framing 引用未知 actor：${framing.source.actorId}`);
+    if (framing.source.institutionId && !institutionIds.includes(framing.source.institutionId)) report('unknown_framing_institution', `${path}.source.institutionId`, `Framing 引用未知 institution：${framing.source.institutionId}`);
+    for (const id of duplicateValues(framing.choiceIds ?? [])) report('duplicate_framing_choice_reference', `${path}.choiceIds`, `Framing 重复引用 choice：${id}`);
+    for (const id of framing.choiceIds ?? []) if (event && !event.choices.some((choice) => choice.id === id)) report('unknown_framing_choice', `${path}.choiceIds`, `Framing 引用未知 choice：${id}`);
+    visitConditions(framing.requirements, (condition) => checkCondition(condition, `${path}.requirements`));
+    checkTemplate(framing.eyebrow, `${path}.eyebrow`);
+    checkTemplate(framing.title, `${path}.title`);
+    checkTemplate(framing.body, `${path}.body`);
+    checkTemplate(framing.footer, `${path}.footer`);
   }
 
   const visiting = new Set<string>();

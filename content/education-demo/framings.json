@@ -1,0 +1,161 @@
+[
+  {
+    "id": "F-E05-GOV",
+    "eventId": "E05",
+    "type": "government_memo",
+    "stance": "government",
+    "source": { "institutionId": "statistics_office" },
+    "eyebrow": "国统教指〔34-05〕号",
+    "title": "关于创造力可比性的行政决定",
+    "body": "经总统作出“{{choice:label}}”的决定，本局确认全国创造力可以在统一纸张、统一时间和统一自由答题区内进行客观比较。当前统一考试状态：{{state:standardized_exam}}。",
+    "footer": "本文件的不同意见将作为创造力样本另行归档。"
+  },
+  {
+    "id": "F-E05-PRESS",
+    "eventId": "E05",
+    "type": "newspaper",
+    "stance": "media",
+    "source": { "actorId": "fox_daily" },
+    "choiceIds": ["A", "C"],
+    "eyebrow": "教育·头版",
+    "title": "全国学生将用同一张试卷证明自己与众不同",
+    "body": "总统选择了“{{choice:label}}”。统计学家表示，只有当每只动物都在相同边框内自由发挥，多样性才能被公平排名。",
+    "footer": "本报将推出《独立思考标准答案》升学特刊。"
+  },
+  {
+    "id": "F-E12-TV",
+    "eventId": "E12",
+    "type": "tv_news",
+    "stance": "media",
+    "source": { "actorId": "evening_news" },
+    "eyebrow": "20:00 共和国晚间新闻",
+    "title": "广场发生大规模教育意见表达活动",
+    "body": "学生要求取消考试并开放校务会议。总统随后选择“{{choice:label}}”。官方画面显示，广场总体保持稳定，镜头外的音量正在有序增大。",
+    "footer": "接下来请看天气：首都今夜有局部标语。"
+  },
+  {
+    "id": "F-E12-INTERNAL",
+    "eventId": "E12",
+    "type": "internal_memo",
+    "stance": "government",
+    "source": { "institutionId": "presidency" },
+    "choiceIds": ["C", "D"],
+    "eyebrow": "限内部阅读·舆情快报",
+    "title": "关于学生口号自我繁殖的风险评估",
+    "body": "总统处置为“{{choice:label}}”。当前学生不满指数为 {{state:student_unrest}}。建议减少公开说明；历史表明，解释栅栏会使公众注意到栅栏。",
+    "footer": "传阅范围：知道已发生何事的官员。"
+  },
+  {
+    "id": "F-E13-MEMO",
+    "eventId": "E13",
+    "type": "government_memo",
+    "stance": "government",
+    "source": { "institutionId": "presidency" },
+    "choiceIds": ["B", "C", "D"],
+    "eyebrow": "总统府统一口径",
+    "title": "改革已进入“{{official_terms:last}}”",
+    "body": "今日起，各部门在提及教育改革时，应优先使用“{{official_terms:last}}”。现实中尚未解决的问题，应视为该阶段正在持续发生的证据。",
+    "footer": "旧文件中的“困难”一词不必销毁，但须调整检索权限。"
+  },
+  {
+    "id": "F-E13-PRESS",
+    "eventId": "E13",
+    "type": "newspaper",
+    "stance": "media",
+    "source": { "actorId": "fox_daily" },
+    "choiceIds": ["A"],
+    "eyebrow": "政治·号外",
+    "title": "总统承认改革遇到困难，市场暂时不知如何定价诚实",
+    "body": "在今日发布会上，总统作出“{{choice:response}}”的回应。记者们连续追问，这种描述是否已经获得官方措辞资格。",
+    "footer": "明日观察：政府会否澄清今日的澄清。"
+  },
+  {
+    "id": "F-E14-PRESS",
+    "eventId": "E14",
+    "type": "newspaper",
+    "stance": "government",
+    "source": { "actorId": "fox_daily" },
+    "eyebrow": "数据·头版",
+    "title": "改革指标增长 42%，现实尚未完成同比追赶",
+    "body": "国家统计局宣布 {{state:reform_metric}} 指标取得突破。总统的实际决定是“{{choice:label}}”。有关部门表示，不应让教师和学生的个别感受干扰全国平均成功。",
+    "footer": "数据经统计局审核，统计局经数据证明可信。"
+  },
+  {
+    "id": "F-E14-INTERNAL",
+    "eventId": "E14",
+    "type": "internal_memo",
+    "stance": "institution",
+    "source": { "institutionId": "statistics_office" },
+    "choiceIds": ["B", "C"],
+    "eyebrow": "内部数据保全通知",
+    "title": "关于 42% 在审计期间的存放建议",
+    "body": "总统选择“{{choice:label}}”。请各处室保留所有原始数据，尤其是那些能够解释为何原始数据不宜被保留的数据。",
+    "footer": "密级：内部公开，对外保密。"
+  },
+  {
+    "id": "F-E16-TV",
+    "eventId": "E16",
+    "type": "tv_news",
+    "stance": "government",
+    "source": { "actorId": "evening_news" },
+    "eyebrow": "LIVE 全国教育特别报道",
+    "title": "教师集体暂停授课，政府表示课堂仍是国家重点",
+    "body": "教师工会今日发起全国行动。总统已选择“{{choice:label}}”。该政治债务目前状态为 {{debt:teacher_support:status}}，请观众以官方翻译为准。",
+    "footer": "画面中黑板上的抗议内容已做教学处理。"
+  },
+  {
+    "id": "F-E16-UNION",
+    "eventId": "E16",
+    "type": "internal_memo",
+    "stance": "institution",
+    "source": { "institutionId": "teachers_union" },
+    "eyebrow": "工会内部通报",
+    "title": "政府回应与债务状态核对",
+    "body": "政府回应：{{choice:response}}原承诺为“{{debt:teacher_support:description}}”，当前帐面状态：{{debt:teacher_support:status}}。请各地分会区分语言上的复课与实际上的上课。",
+    "footer": "会员阅读后无需删除，政治记忆将自行留存。"
+  },
+  {
+    "id": "F-E17-PRESS",
+    "eventId": "E17",
+    "type": "newspaper",
+    "stance": "opposition",
+    "source": { "label": "地下刊物《獭洞观察》" },
+    "eyebrow": "广场特刊",
+    "title": "学生用总统的话反对总统",
+    "body": "五年前的原话“{{memory:education_principle}}”今日出现在全国广场。总统选择“{{choice:label}}”；学生则选择继续保存总统曾经的版本。",
+    "footer": "本刊印刷许可申请仍处于建设性审查阶段。"
+  },
+  {
+    "id": "F-E17-TV",
+    "eventId": "E17",
+    "type": "tv_news",
+    "stance": "government",
+    "source": { "actorId": "evening_news" },
+    "eyebrow": "特别报道·建设性独立思考",
+    "title": "学生运动进入新阶段",
+    "body": "总统今日作出“{{choice:label}}”的处置。与学生相关的政治债务状态为 {{debt:student_expectations:status}}。官方强调，引用旧话不等于理解当前的旧话。",
+    "footer": "本台已将现场口号降噪，以便观众听清官方解释。"
+  },
+  {
+    "id": "F-E20-ARCHIVE",
+    "eventId": "E20",
+    "type": "government_memo",
+    "stance": "government",
+    "source": { "institutionId": "national_archives" },
+    "eyebrow": "共和国历 39 年教材编审意见",
+    "title": "关于本届政府教育改革历史定性",
+    "body": "{{history:evaluation}}编审组认为，所有临时选择均应在时间线上排列为长期战略，以免学生误以为历史曾经存在其他可能。",
+    "footer": "批准印数：每名学生一册，每种解释零册。"
+  },
+  {
+    "id": "F-E20-FOREIGN",
+    "eventId": "E20",
+    "type": "newspaper",
+    "stance": "foreign_observer",
+    "source": { "label": "《海外迁徙鸟报》" },
+    "eyebrow": "国际观察",
+    "title": "狐狸共和国完成教育改革，并成功解释其过程",
+    "body": "共和国教材已对改革作出稳定评价。外交观察家注意到，其最稳定的成果是官方措辞“{{official_terms:last}}”，而最长久的遗产是仍然有人记得措辞之前发生了什么。",
+    "footer": "本报对所有国家保持等距离误解。"
+  }
+]
