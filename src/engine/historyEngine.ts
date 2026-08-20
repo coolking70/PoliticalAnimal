@@ -1,0 +1,39 @@
+import type { GameSave } from '../models/game';
+import { findMemory } from './memoryEngine';
+import { queryDebt } from './debtEngine';
+
+export function generateHistoricalEvaluation(save: GameSave): string {
+  const metric = save.worldState.reform_metric;
+  const exam = save.worldState.standardized_exam === true;
+  const autonomy = Number(save.worldState.local_autonomy ?? 0);
+  const expertPower = Number(save.worldState.expert_power ?? 0);
+  const finalPolicy = save.worldState.final_policy;
+  const term = Array.isArray(save.worldState.official_terms)
+    ? save.worldState.official_terms.at(-1)
+    : undefined;
+
+  const doctrine = finalPolicy === 'permanent_reform'
+    ? '把临时改革建设成了永久机构'
+    : finalPolicy === 'local_autonomy' || autonomy >= 3
+      ? '以中央退出证明了地方多样性的胜利'
+      : finalPolicy === 'expert_rule' || expertPower >= 3
+        ? '让专家从解释教育开始，逐步学会解释国家'
+        : exam
+          ? '建立了全国统一的独立思考标准'
+          : '成功避免了用同一种方法要求所有动物保持不同';
+  const measurement = metric && metric !== 'none'
+    ? `官方的${String(metric) === 'creativity' ? '创造力指数' : '改革指标'}在五年内增长了 42%。`
+    : '由于拒绝设置指标，改革取得了无法被数字否认的成功。';
+  const language = term ? `历史教材把这段时期称为“${term}”。` : '历史教材把当年的混乱解释为审慎的战略留白。';
+  return `五年后的共和国教材写道：本届政府${doctrine}。${measurement}${language}`;
+}
+
+export function renderNarrativeTemplate(template: string, save: GameSave): string {
+  return template
+    .replace(/\{\{memory:([^}]+)\}\}/g, (_, topic: string) =>
+      findMemory(save.memories, topic)?.statement ?? '政府始终尊重独立思考')
+    .replace(/\{\{debt:([^}]+)\}\}/g, (_, topic: string) =>
+      queryDebt(save.debts, topic)[0]?.description ?? '一项尚未被正式承认的承诺')
+    .replace(/\{\{state:([^}]+)\}\}/g, (_, field: string) => String(save.worldState[field] ?? '未定义'))
+    .replace('{{history:evaluation}}', generateHistoricalEvaluation(save));
+}

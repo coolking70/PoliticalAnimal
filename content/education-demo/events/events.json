@@ -1,0 +1,229 @@
+[
+  {
+    "id": "E01", "title": "伟大的承诺", "type": "core", "thread": ["Education"], "priority": 120, "weight": 1, "once": true,
+    "requirements": [{ "field": "story_step", "operator": "==", "value": 0 }],
+    "actor": "总统阁下", "actorEmoji": "🦊",
+    "scene": "胜选演说的油墨还没干，内阁已经想知道：这句口号究竟是一项政策，还是一项等到下届政府再解释的愿望？",
+    "choices": [
+      { "id": "A", "label": "立即开始全国改革", "response": "教育部获得了一面写着“不能等待”的旗帜，以及一个尚未获得预算的办公室。", "effects": [{"field":"reform_speed","operation":"increment","value":2},{"field":"education_reform","operation":"set","value":"planning"},{"field":"story_step","operation":"set","value":1}], "memories": [{"speaker":"president","topic":"education_principle","statement":"改革不能等待。每一只动物都有权尽快学会独立思考。","public":true,"importance":4,"tags":["promise","education","freedom"]}] },
+      { "id": "B", "label": "先让专家调查", "response": "专家委员会一致同意，独立思考需要先由专家独立思考。", "effects": [{"field":"expert_power","operation":"increment","value":1},{"field":"education_reform","operation":"set","value":"planning"},{"field":"story_step","operation":"set","value":1}], "memories": [{"speaker":"president","topic":"education_principle","statement":"教育政策不能服从一时政治，应该让专业判断说话。","public":true,"importance":4,"tags":["promise","education","expert"]}], "debts": [{"creditor":"expert_committee","type":"political_authority","topic":"expert_mandate","strength":2,"pressure":1,"description":"专家委员会等待获得改革决策权。","tags":["experts","authority"]}] },
+      { "id": "C", "label": "让地方自行试点", "response": "十二个地方宣布自愿试点，其中十一个要求中央先定义“自愿”。", "effects": [{"field":"local_autonomy","operation":"increment","value":1},{"field":"education_reform","operation":"set","value":"planning"},{"field":"story_step","operation":"set","value":1}], "memories": [{"speaker":"president","topic":"education_principle","statement":"教育不应该由中央统一决定，地方最了解自己的学生。","public":true,"importance":4,"tags":["promise","education","autonomy"]}], "debts": [{"creditor":"local_governments","type":"autonomy_expectation","topic":"local_autonomy","strength":2,"pressure":1,"description":"地方政府期待中央兑现试点自治权。","tags":["local","autonomy"]}] }
+    ]
+  },
+  {
+    "id": "E02", "title": "什么叫独立思考？", "type": "core", "thread": ["Education"], "priority": 120, "weight": 1, "once": true,
+    "requirements": [{ "field": "story_step", "operator": "==", "value": 1 }],
+    "actor": "教育部长 · 奥维尔·夜羽", "actorEmoji": "🦉",
+    "scene": "教育部长在凌晨两点提交了三百页定义草案。他真诚地提醒你：如果政府不先定义独立思考，学校就可能各自理解。",
+    "choices": [
+      { "id": "A", "label": "由教育部定义", "response": "教育部成立“独立思考统一定义处”。", "effects": [{"field":"bureaucracy","operation":"increment","value":1},{"field":"definition_owner","operation":"set","value":"ministry"},{"field":"story_step","operation":"set","value":2}] },
+      { "id": "B", "label": "由大学定义", "response": "大学接受任务，并立即就谁有权定义“定义”展开学术争论。", "effects": [{"field":"expert_power","operation":"increment","value":1},{"field":"definition_owner","operation":"set","value":"universities"},{"field":"story_step","operation":"set","value":2}] },
+      { "id": "C", "label": "政府不该定义它", "response": "这句话获得热烈掌声，同时让政策起草小组失去了政策。", "effects": [{"field":"local_autonomy","operation":"increment","value":1},{"field":"definition_owner","operation":"set","value":"undefined"},{"field":"story_step","operation":"set","value":2}], "memories": [{"speaker":"president","topic":"education_principle","statement":"真正的独立思考，不能由政府替大家定义。","public":true,"importance":5,"tags":["promise","education","freedom","high_risk"]}] }
+    ]
+  },
+  {
+    "id": "E03", "title": "财政部长的问题", "type": "core", "thread": ["Education", "Economy"], "priority": 120, "weight": 1, "once": true,
+    "requirements": [{ "field": "story_step", "operator": "==", "value": 2 }],
+    "actor": "财政部长 · 赫克托·满颊", "actorEmoji": "🐹",
+    "scene": "财政部长把改革文件塞进左腮，把预算表塞进右腮，只问了一句：独立思考，每只动物需要多少钱？",
+    "choices": [
+      { "id": "A", "label": "大量拨款", "response": "改革获得推进资金。财政部获得了未来每次开会都叹气的权利。", "effects": [{"field":"budget_pressure","operation":"increment","value":2},{"field":"reform_speed","operation":"increment","value":1},{"field":"story_step","operation":"set","value":3}], "debts": [{"creditor":"ministry_finance","type":"budget_obligation","topic":"education_budget","strength":2,"pressure":1,"description":"财政部等待教育改革证明这笔特别拨款值得。","tags":["budget","ministry"]}] },
+      { "id": "B", "label": "教育部自行解决", "response": "教育部宣布，缺少资金将培养部门的制度创新能力。", "effects": [{"field":"ministry_pressure","operation":"increment","value":1},{"field":"story_step","operation":"set","value":3}] },
+      { "id": "C", "label": "学校自行筹款", "response": "富裕学校开始出售冠名权；一所学校的历史课已由坚果公司赞助。", "effects": [{"field":"inequality","operation":"increment","value":1},{"field":"story_step","operation":"set","value":3}] }
+    ]
+  },
+  {
+    "id": "E04", "title": "如何证明改革成功？", "type": "core", "thread": ["Education", "Media"], "priority": 120, "weight": 1, "once": true,
+    "requirements": [{ "field": "story_step", "operator": "==", "value": 3 }],
+    "actor": "国家统计局代表", "actorEmoji": "🐈",
+    "scene": "统计局表示，无法年度比较的成功，在年度报告里与失败没有区别。他们需要一个数字，最好还能上升。",
+    "choices": [
+      { "id": "A", "label": "学生满意度", "response": "统计局开始研究如何让不满意的学生满意地填写满意度。", "effects": [{"field":"reform_metric","operation":"set","value":"satisfaction"},{"field":"story_step","operation":"set","value":4}] },
+      { "id": "B", "label": "考试成绩", "response": "教育部松了一口气：至少考试已经存在，不必再发明一种。", "effects": [{"field":"reform_metric","operation":"set","value":"exam_scores"},{"field":"standardized_exam","operation":"set","value":true},{"field":"story_step","operation":"set","value":5}] },
+      { "id": "C", "label": "创造力指数", "response": "统计局第一次露出真正快乐的神情。一个全新的数字诞生了。", "effects": [{"field":"reform_metric","operation":"set","value":"creativity"},{"field":"story_step","operation":"set","value":4}] },
+      { "id": "D", "label": "拒绝设置指标", "response": "统计局记录：总统对可量化治理的支持度为零。", "effects": [{"field":"reform_metric","operation":"set","value":"none"},{"field":"statistics_tension","operation":"increment","value":1},{"field":"story_step","operation":"set","value":5}], "debts": [{"creditor":"statistics_office","type":"measurement_demand","topic":"reform_metric","strength":2,"pressure":2,"description":"统计局要求政府以后重新讨论量化改革成果。","tags":["kpi","statistics"]}] }
+    ]
+  },
+  {
+    "id": "E05", "title": "创造力考试", "type": "reactive", "thread": ["Education", "Students"], "priority": 110, "weight": 1, "once": true,
+    "requirements": [{"all":[{"field":"story_step","operator":"==","value":4},{"field":"reform_metric","operator":"==","value":"creativity"}]}],
+    "actor": "国家统计局代表", "actorEmoji": "🐈",
+    "scene": "统计局建议举行全国统一创造力考试。试卷第一题是：请在规定区域内自由发挥，不得超出边框。",
+    "choices": [
+      { "id": "A", "label": "批准全国考试", "response": "全国学校获得统一试卷，以及一份解释为什么统一能够促进多样性的通知。", "effects": [{"field":"standardized_exam","operation":"set","value":true},{"field":"teacher_unrest","operation":"increment","value":2},{"field":"story_step","operation":"set","value":5}] },
+      { "id": "B", "label": "否决考试", "response": "统计局接受决定，并申请研究“不可考试型创造力替代指标”。", "effects": [{"field":"standardized_exam","operation":"set","value":false},{"field":"statistics_tension","operation":"increment","value":1},{"field":"story_step","operation":"set","value":5}] },
+      { "id": "C", "label": "只在部分地区试点", "response": "试点地区立即开设了非试点地区无法报名的试点考试培训班。", "effects": [{"field":"standardized_exam","operation":"set","value":true},{"field":"exam_pilot","operation":"set","value":true},{"field":"local_autonomy","operation":"increment","value":1},{"field":"teacher_unrest","operation":"increment","value":1},{"field":"story_step","operation":"set","value":5}] }
+    ]
+  },
+  {
+    "id": "E06", "title": "独立思考标准答案", "type": "reactive", "thread": ["Education", "Teachers"], "priority": 110, "weight": 1, "once": true,
+    "requirements": [{"all":[{"field":"story_step","operator":"==","value":5},{"field":"standardized_exam","operator":"==","value":true}]}],
+    "actor": "教师工会代表", "actorEmoji": "🐐",
+    "scene": "教师们需要知道独立思考类试题是否有标准答案。没有答案无法统一阅卷，有答案似乎又不够独立。",
+    "choices": [
+      { "id": "A", "label": "当然有", "response": "阅卷顺利了。独立思考的标准答案共有四个，顺序不得调整。", "effects": [{"field":"answer_policy","operation":"set","value":"standard"},{"field":"teacher_unrest","operation":"increment","value":1},{"field":"story_step","operation":"set","value":6}] },
+      { "id": "B", "label": "当然没有", "response": "每位阅卷教师都给出了独立分数，统计局拒绝承认这是成功。", "effects": [{"field":"answer_policy","operation":"set","value":"none"},{"field":"grading_crisis","operation":"set","value":true},{"field":"teacher_unrest","operation":"increment","value":1},{"field":"story_step","operation":"set","value":6}] },
+      { "id": "C", "label": "由各地方决定", "response": "地方获得自主权，全国数据失去了彼此认识的机会。", "effects": [{"field":"answer_policy","operation":"set","value":"local"},{"field":"local_autonomy","operation":"increment","value":1},{"field":"story_step","operation":"set","value":6}] }
+    ]
+  },
+  {
+    "id": "E07", "title": "教师行政负担", "type": "reactive", "thread": ["Teachers"], "priority": 110, "weight": 1, "once": true,
+    "requirements": [{ "field": "story_step", "operator": "==", "value": 6 }],
+    "actor": "教师工会代表", "actorEmoji": "🐐",
+    "scene": "每名学生必须填写 47 项创造力指标。教师工会报告：教师现在没有时间教学，但对教学过程的记录前所未有地完整。",
+    "choices": [
+      { "id": "A", "label": "减少表格", "response": "教师重新获得教学时间；统计局失去了一部分关于他们如何使用时间的数据。", "effects": [{"field":"teacher_unrest","operation":"decrement","value":1},{"field":"data_quality","operation":"decrement","value":1},{"field":"story_step","operation":"set","value":7}] },
+      { "id": "B", "label": "增加行政助理", "response": "学校终于有人填写表格，财政部终于有了新的问题。", "effects": [{"field":"budget_pressure","operation":"increment","value":1},{"field":"teacher_unrest","operation":"decrement","value":1},{"field":"story_step","operation":"set","value":7}], "debts": [{"creditor":"teachers_union","type":"staffing_promise","topic":"teacher_support","strength":2,"pressure":1,"description":"教师工会等待行政助理真正到岗。","tags":["teachers","promise"]}] },
+      { "id": "C", "label": "表格也是教育活动", "response": "官方词典新增“教育性行政活动”。教师被要求抄写这一定义三遍以加深理解。", "effects": [{"field":"official_terms","operation":"push","value":"教育性行政活动"},{"field":"bureaucracy","operation":"increment","value":1},{"field":"teacher_unrest","operation":"increment","value":1},{"field":"story_step","operation":"set","value":7}] }
+    ]
+  },
+  {
+    "id": "E08", "title": "创造力培训产业", "type": "ambient", "thread": ["Education", "Economy"], "priority": 105, "weight": 1, "once": true,
+    "requirements": [{"all":[{"field":"story_step","operator":"==","value":7},{"field":"standardized_exam","operator":"==","value":true},{"field":"reform_metric","operator":"==","value":"creativity"}]}],
+    "actor": "《狐狸日报》", "actorEmoji": "📰",
+    "scene": "民间出现“全国创造力考试培训中心”。广告承诺：十四天教会幼崽拥有标准、稳定、可复现的原创思想。",
+    "choices": [
+      { "id": "A", "label": "禁止培训", "response": "培训中心改名为“非培训型思想准备室”，继续营业。", "effects": [{"field":"training_policy","operation":"set","value":"banned"},{"field":"market_tension","operation":"increment","value":1},{"field":"story_step","operation":"set","value":8}] },
+      { "id": "B", "label": "允许经营", "response": "创造力成为共和国增长最快的标准化产业。", "effects": [{"field":"training_policy","operation":"set","value":"allowed"},{"field":"inequality","operation":"increment","value":1},{"field":"story_step","operation":"set","value":8}] },
+      { "id": "C", "label": "纳入正规教育", "response": "教育部成功吸收了对教育改革的讽刺，并为其设立司局级单位。", "effects": [{"field":"training_policy","operation":"set","value":"nationalized"},{"field":"bureaucracy","operation":"increment","value":1},{"field":"story_step","operation":"set","value":8}] }
+    ]
+  },
+  {
+    "id": "E09", "title": "宗教委员会来访", "type": "core", "thread": ["Religion", "Education"], "priority": 100, "weight": 1, "once": true,
+    "requirements": [{"any":[{"field":"story_step","operator":"==","value":5},{"field":"story_step","operator":"==","value":7},{"field":"story_step","operator":"==","value":8},{"field":"story_step","operator":"==","value":4}]}],
+    "blockers": [{"all":[{"field":"story_step","operator":"==","value":5},{"field":"standardized_exam","operator":"==","value":true}]},{"all":[{"field":"story_step","operator":"==","value":7},{"field":"reform_metric","operator":"==","value":"creativity"}]},{"all":[{"field":"story_step","operator":"==","value":4},{"field":"reform_metric","operator":"==","value":"creativity"}]}],
+    "actor": "牧首温顺三世", "actorEmoji": "🐑",
+    "scene": "宗教领袖支持教育，也支持思考。他唯一的保留意见是：有些问题若思考出错误答案，最好从一开始就不要独立。",
+    "choices": [
+      { "id": "A", "label": "宗教课程例外", "response": "委员会感谢政府捍卫独立思考免受部分思想影响。", "effects": [{"field":"religious_influence","operation":"increment","value":2},{"field":"story_step","operation":"set","value":9}], "debts": [{"creditor":"religious_council","type":"policy_exemption","topic":"religious_exemption","strength":3,"pressure":2,"description":"宗教委员会期待今后的课程争议继续获得豁免。","tags":["religion","exemption"]}] },
+      { "id": "B", "label": "全部课程一致", "response": "牧首表示尊重决定，并宣布下周所有讲坛将详细解释为什么它不值得尊重。", "effects": [{"field":"religious_tension","operation":"increment","value":2},{"field":"story_step","operation":"set","value":9}] },
+      { "id": "C", "label": "成立委员会研究", "response": "冲突被成功推迟到委员会提交报告之后，预计共和国历 41 年。", "effects": [{"field":"bureaucracy","operation":"increment","value":1},{"field":"story_step","operation":"set","value":9}] }
+    ]
+  },
+  {
+    "id": "E10", "title": "地方海狸方案", "type": "core", "thread": ["Education", "Economy"], "priority": 100, "weight": 1, "once": true,
+    "requirements": [{ "field": "story_step", "operator": "==", "value": 9 }],
+    "actor": "地方长官 · 巴克·固坝", "actorEmoji": "🦫",
+    "scene": "海狸地方长官认定教育落后的根源是建筑不足。他递交全国“独立思考中心”计划，每座中心都配有一座象征思想流动的水坝。",
+    "choices": [
+      { "id": "A", "label": "批准建设", "response": "第一批中心提前竣工。教师岗位将在下一财政年度研究。", "effects": [{"field":"construction_cost","operation":"increment","value":2},{"field":"thinking_centers","operation":"set","value":"national"},{"field":"story_step","operation":"set","value":10}] },
+      { "id": "B", "label": "拒绝方案", "response": "地方长官遗憾地表示，中央再次用抽象政策阻碍混凝土进步。", "effects": [{"field":"local_tension","operation":"increment","value":1},{"field":"thinking_centers","operation":"set","value":"rejected"},{"field":"story_step","operation":"set","value":10}] },
+      { "id": "C", "label": "只在落后地区修建", "response": "全国各地争相提交证据，证明自己在教育上最为落后。", "effects": [{"field":"construction_cost","operation":"increment","value":1},{"field":"inequality","operation":"increment","value":1},{"field":"thinking_centers","operation":"set","value":"targeted"},{"field":"story_step","operation":"set","value":10}] }
+    ]
+  },
+  {
+    "id": "E11", "title": "学生要求更多自由", "type": "core", "thread": ["Students", "Education"], "priority": 120, "weight": 1, "once": true,
+    "requirements": [{"field":"story_step","operator":"==","value":10}],
+    "actor": "学生领袖 · 瑞拉快耳", "actorEmoji": "🐇",
+    "scene": "学生领袖拿着你的改革纲领问：既然学校要培养独立思考，学生是否也有权公开批评学校？办公室里第一次有人把口号当成了使用说明。",
+    "choices": [
+      {"id":"A","label":"允许学生批评学校","response":"学生感谢政府授予一项他们原以为本来就有的权利。","effects":[{"field":"student_autonomy","operation":"increment","value":2},{"field":"student_unrest","operation":"increment","value":1},{"field":"story_step","operation":"set","value":11}],"memories":[{"speaker":"president","topic":"student_freedom","statement":"学生有权批评学校，教育不能害怕问题。","public":true,"importance":4,"tags":["promise","students","freedom"]}]},
+      {"id":"B","label":"只允许讨论教学","response":"学校新增“非政治性批评申请表”，由政治教育处负责审批。","effects":[{"field":"student_unrest","operation":"increment","value":2},{"field":"story_step","operation":"set","value":11}],"memories":[{"speaker":"president","topic":"student_freedom","statement":"学生可以讨论教学，但政治不属于教学问题。","public":true,"importance":4,"tags":["students","restriction"]}]},
+      {"id":"C","label":"禁止讨论政治","response":"学生们立即开始独立思考，为什么独立思考不能讨论这个决定。","effects":[{"field":"student_unrest","operation":"increment","value":3},{"field":"media_tension","operation":"increment","value":1},{"field":"story_step","operation":"set","value":11}],"memories":[{"speaker":"president","topic":"student_freedom","statement":"校园不应成为政治场所。","public":true,"importance":5,"tags":["students","restriction","high_risk"]}]}
+    ]
+  },
+  {
+    "id": "E12", "title": "第一场抗议", "type": "reactive", "thread": ["Students", "Media"], "priority": 115, "weight": 1, "once": true,
+    "requirements": [{"all":[{"field":"story_step","operator":"==","value":11},{"field":"student_unrest","operator":">=","value":1}]}],
+    "actor": "总统安全顾问", "actorEmoji": "🐕",
+    "scene": "学生举行第一次大规模抗议。他们要求取消考试、开放校务会议，并解释为什么‘自由讨论区’四周装有栅栏。",
+    "choices": [
+      {"id":"A","label":"与学生对话","response":"冲突暂时缓和，学生获得了总统会继续听取意见的期待。","effects":[{"field":"student_unrest","operation":"increment","value":1},{"field":"story_step","operation":"set","value":12}],"debts":[{"creditor":"student_union","type":"consultation_promise","topic":"student_expectations","strength":3,"pressure":2,"description":"学生等待总统兑现对话中暗示的进一步让步。","tags":["students","promise"]}]},
+      {"id":"B","label":"取消统一考试","response":"学生庆祝；统计局要求把取消考试造成的成功纳入考试指标。","effects":[{"field":"standardized_exam","operation":"set","value":false},{"field":"student_unrest","operation":"decrement","value":1},{"field":"statistics_tension","operation":"increment","value":1},{"field":"story_step","operation":"set","value":12}]},
+      {"id":"C","label":"维持校园秩序","response":"广场安静下来。宿舍里的每一面墙开始说话。","effects":[{"field":"student_unrest","operation":"increment","value":2},{"field":"media_tension","operation":"increment","value":1},{"field":"story_step","operation":"set","value":12}]},
+      {"id":"D","label":"真正独立者不会盲目抗议","response":"这句话在当天晚上成为全国传播最快的抗议标语。","effects":[{"field":"student_unrest","operation":"increment","value":2},{"field":"story_step","operation":"set","value":12}],"memories":[{"speaker":"president","topic":"protest_statement","statement":"真正独立思考的人，不会盲目参加抗议。","public":true,"importance":5,"tags":["students","high_risk","contradiction"]}]}
+    ]
+  },
+  {
+    "id": "E13", "title": "新闻发布会", "type": "core", "thread": ["Media"], "priority": 115, "weight": 1, "once": true,
+    "requirements": [{"field":"story_step","operator":"==","value":12}],
+    "actor": "《狐狸日报》记者", "actorEmoji": "🦊",
+    "scene": "记者问：改革是不是已经失败？幕僚提醒你，现实只能发生一次，官方措辞却可以反复修订。",
+    "choices": [
+      {"id":"A","label":"确实遇到困难","response":"市场因诚实而震惊了半天，随后恢复正常。","effects":[{"field":"narrative_pressure","operation":"decrement","value":1},{"field":"story_step","operation":"set","value":13}],"memories":[{"speaker":"president","topic":"reform_narrative","statement":"改革确实遇到了困难。","public":true,"importance":3,"tags":["media","honesty"]}]},
+      {"id":"B","label":"改革进入调整期","response":"共和国第一次发现，只要进入调整期，失败就会暂时失去时态。","effects":[{"field":"official_terms","operation":"push","value":"调整期"},{"field":"narrative_pressure","operation":"increment","value":1},{"field":"story_step","operation":"set","value":13}],"memories":[{"speaker":"president","topic":"reform_narrative","statement":"改革没有失败，只是进入调整期。","public":true,"importance":3,"tags":["media","euphemism"]}]},
+      {"id":"C","label":"改革进入深化阶段","response":"所有尚未解决的问题被重新归类为改革正在深入的证据。","effects":[{"field":"official_terms","operation":"push","value":"深化阶段"},{"field":"narrative_pressure","operation":"increment","value":2},{"field":"story_step","operation":"set","value":13}],"memories":[{"speaker":"president","topic":"reform_narrative","statement":"争议证明改革已经进入深化阶段。","public":true,"importance":4,"tags":["media","euphemism"]}]},
+      {"id":"D","label":"已取得阶段性结构成果","response":"统计局请求把这句话列为一项可量化成果。","effects":[{"field":"official_terms","operation":"push","value":"阶段性结构成果"},{"field":"narrative_pressure","operation":"increment","value":3},{"field":"story_step","operation":"set","value":13}],"memories":[{"speaker":"president","topic":"reform_narrative","statement":"改革已经取得阶段性结构成果。","public":true,"importance":5,"tags":["media","success_claim","high_risk"]}],"debts":[{"creditor":"official_narrative","type":"narrative_debt","topic":"reform_success","strength":4,"pressure":3,"description":"政府必须继续维护改革已经成功的公开叙事。","tags":["narrative","media"]}]}
+    ]
+  },
+  {
+    "id": "E14", "title": "指标取得突破", "type": "reactive", "thread": ["Media", "Education"], "priority": 112, "weight": 1, "once": true,
+    "requirements": [{"all":[{"field":"story_step","operator":"==","value":13},{"field":"reform_metric","operator":"!=","value":"none"}]}],
+    "actor": "国家统计局代表", "actorEmoji": "🐈",
+    "scene": "即使教师和学生都在抗议，统计局仍报告改革指标增长 42%。曲线如此漂亮，以至于现实显得有些不合群。",
+    "choices": [
+      {"id":"A","label":"公开庆祝","response":"政府宣布改革成功。从今天起，任何坏消息都需要先解释为何不影响成功。","effects":[{"field":"official_success","operation":"set","value":true},{"field":"narrative_pressure","operation":"increment","value":2},{"field":"story_step","operation":"set","value":14}],"memories":[{"speaker":"president","topic":"metric_success","statement":"数据证明，教育改革已经取得历史性成功。","public":true,"importance":5,"tags":["success_claim","statistics","high_risk"]}],"debts":[{"creditor":"official_narrative","type":"narrative_debt","topic":"reform_success","strength":4,"pressure":3,"description":"政府必须维护‘数据证明改革成功’的官方叙事。","tags":["narrative","statistics"]}]},
+      {"id":"B","label":"要求重新审计","response":"统计局表示欢迎监督，并要求由统计局统计监督结果。","effects":[{"field":"statistics_tension","operation":"increment","value":2},{"field":"story_step","operation":"set","value":14}]},
+      {"id":"C","label":"暂不公布","response":"数字从报告里消失后，立刻成为媒体最感兴趣的数字。","effects":[{"field":"media_tension","operation":"increment","value":2},{"field":"story_step","operation":"set","value":14}]}
+    ]
+  },
+  {
+    "id": "E15", "title": "学校开始作弊", "type": "reactive", "thread": ["Education", "Teachers"], "priority": 110, "weight": 1, "once": true,
+    "requirements": [{"all":[{"field":"story_step","operator":"==","value":14},{"field":"standardized_exam","operator":"==","value":true}]}],
+    "actor": "教育督察", "actorEmoji": "🦝",
+    "scene": "部分学校要求学生在创造力问卷中统一选择‘非常有创造力’。校长辩称，他们只是帮助学生更准确地认识自己。",
+    "choices": [
+      {"id":"A","label":"处罚涉事学校","response":"学校学会了不再留下书面作弊指导。","effects":[{"field":"teacher_unrest","operation":"increment","value":1},{"field":"story_step","operation":"set","value":15}]},
+      {"id":"B","label":"修改指标体系","response":"一项有漏洞的指标被十二项更精密的指标包围。","effects":[{"field":"bureaucracy","operation":"increment","value":2},{"field":"teacher_unrest","operation":"increment","value":3},{"field":"story_step","operation":"set","value":15}]},
+      {"id":"C","label":"让问卷更加科学","response":"问卷新增测谎题：‘我从未在任何问卷中撒谎。’","effects":[{"field":"bureaucracy","operation":"increment","value":1},{"field":"teacher_unrest","operation":"increment","value":3},{"field":"story_step","operation":"set","value":15}]}
+    ]
+  },
+  {
+    "id": "E16", "title": "教师全国罢工", "type": "debt", "thread": ["Teachers", "Economy"], "priority": 110, "weight": 1, "once": true,
+    "requirements": [{"all":[{"any":[{"field":"story_step","operator":"==","value":14},{"field":"story_step","operator":"==","value":15}]},{"field":"teacher_unrest","operator":">=","value":3}]}],
+    "actor": "教师工会代表", "actorEmoji": "🐐",
+    "scene": "教师工会宣布全国罢工。工会档案里仍保存着这笔账：{{debt:teacher_support}}即使这项债务从未被政府承认，压力也已经按时到期。",
+    "choices": [
+      {"id":"A","label":"与工会谈判","response":"政府兑现了部分支持，工会则承诺以后只在工作日罢工。","effects":[{"field":"teacher_unrest","operation":"decrement","value":2},{"field":"story_step","operation":"set","value":16}],"debtActions":[{"action":"resolve","topic":"teacher_support"}]},
+      {"id":"B","label":"提高教师薪资","response":"学校恢复上课，财政部长进入季节性冬眠。","effects":[{"field":"budget_pressure","operation":"increment","value":3},{"field":"teacher_unrest","operation":"decrement","value":3},{"field":"story_step","operation":"set","value":16}],"debtActions":[{"action":"resolve","topic":"teacher_support"}]},
+      {"id":"C","label":"强制复课","response":"课堂恢复秩序，教师开始用课程内容解释什么叫强制。","effects":[{"field":"teacher_unrest","operation":"increment","value":2},{"field":"story_step","operation":"set","value":16}],"debtActions":[{"action":"break","topic":"teacher_support"}]},
+      {"id":"D","label":"定义为全国教育研讨活动","response":"罢工在官方文件中结束，教师在街上继续参加‘研讨’。","effects":[{"field":"official_terms","operation":"push","value":"全国教育工作研讨活动"},{"field":"narrative_pressure","operation":"increment","value":2},{"field":"story_step","operation":"set","value":16}]}
+    ]
+  },
+  {
+    "id": "E17", "title": "全国学生运动", "type": "core", "thread": ["Students", "Media"], "priority": 105, "weight": 1, "once": true,
+    "requirements": [{"all":[{"any":[{"field":"story_step","operator":"==","value":13},{"field":"story_step","operator":"==","value":14},{"field":"story_step","operator":"==","value":15},{"field":"story_step","operator":"==","value":16}]},{"scope":"memory","field":"topic","operator":"==","value":"education_principle"}]}],
+    "actor": "学生领袖 · 瑞拉快耳", "actorEmoji": "🐇",
+    "scene": "学生把你早期的公开讲话印成海报，广场上每隔十步就能看到你的原话：‘{{memory:education_principle}}’一项曾经帮助你赢得支持的承诺，现在成了反对你的证据。",
+    "choices": [
+      {"id":"A","label":"接受学生诉求","response":"学生取得胜利，教育部第一次被自己的改革教育。","effects":[{"field":"student_autonomy","operation":"increment","value":2},{"field":"student_unrest","operation":"decrement","value":3},{"field":"institutional_authority","operation":"decrement","value":1},{"field":"story_step","operation":"set","value":17}],"debtActions":[{"action":"resolve","topic":"student_expectations"}]},
+      {"id":"B","label":"作出有限让步","response":"学生获得一个席位，以及等待第二个席位的政治债务。","effects":[{"field":"student_unrest","operation":"decrement","value":1},{"field":"story_step","operation":"set","value":17}],"debts":[{"creditor":"student_union","type":"future_concession","topic":"student_expectations","strength":3,"pressure":2,"description":"学生等待政府扩大有限让步。","tags":["students","promise"]}]},
+      {"id":"C","label":"禁止全国集会","response":"政府禁止学生公开朗读总统公开讲话。","effects":[{"field":"student_unrest","operation":"increment","value":3},{"field":"media_tension","operation":"increment","value":2},{"field":"story_step","operation":"set","value":17}],"memories":[{"speaker":"president","topic":"assembly_policy","statement":"公共秩序高于未经批准的自由集会。","public":true,"importance":5,"tags":["restriction","contradiction","high_risk"]}],"debtActions":[{"action":"break","topic":"student_expectations"}]},
+      {"id":"D","label":"重新定义独立思考","response":"教育部开始起草一个不包括引用总统原话的新定义。","effects":[{"field":"bureaucracy","operation":"increment","value":2},{"field":"official_terms","operation":"push","value":"建设性独立思考"},{"field":"story_step","operation":"set","value":17}]}
+    ]
+  },
+  {
+    "id": "E18", "title": "总统必须解释自己", "type": "reactive", "thread": ["Media"], "priority": 110, "weight": 1, "once": true,
+    "requirements": [{"all":[{"field":"story_step","operator":"==","value":17},{"scope":"memory","field":"public","operator":"==","value":true}]}],
+    "actor": "共和国晚间新闻", "actorEmoji": "📺",
+    "scene": "媒体把两段总统讲话并排播出：‘{{memory:education_principle}}’以及‘{{memory:student_freedom}}’。主播没有评论，只在两段话之间留了三秒钟。那三秒成为本年度收视率最高的政治分析。",
+    "choices": [
+      {"id":"A","label":"时代变化了","response":"你承认政策转向。反对党失去了一条指控，获得了一条新标题。","effects":[{"field":"policy_reversal","operation":"set","value":true},{"field":"story_step","operation":"set","value":18}],"memories":[{"speaker":"president","topic":"self_explanation","statement":"时代变化了，政策也必须变化。","public":true,"importance":3,"tags":["explanation"]}]},
+      {"id":"B","label":"这些话并不矛盾","response":"语言学家被紧急召入总统府，政府开始在标点符号中寻找连续性。","effects":[{"field":"narrative_pressure","operation":"increment","value":2},{"field":"story_step","operation":"set","value":18}],"memories":[{"speaker":"president","topic":"self_explanation","statement":"这些讲话从来没有矛盾，只是分别完整。","public":true,"importance":4,"tags":["explanation","euphemism"]}]},
+      {"id":"C","label":"媒体断章取义","response":"媒体次日完整播放了全部讲话，节目时长因此增加两小时。","effects":[{"field":"media_tension","operation":"increment","value":2},{"field":"story_step","operation":"set","value":18}]},
+      {"id":"D","label":"成立委员会研究是否矛盾","response":"委员会的成立同时证明两段话可能矛盾，也证明政府正在解决矛盾。","effects":[{"field":"bureaucracy","operation":"increment","value":1},{"field":"story_step","operation":"set","value":18}]}
+    ]
+  },
+  {
+    "id": "E19", "title": "教育改革最终方案", "type": "core", "thread": ["Education"], "priority": 120, "weight": 1, "once": true,
+    "requirements": [{"field":"story_step","operator":"==","value":18}],
+    "actor": "总统内阁", "actorEmoji": "🏛️",
+    "scene": "所有委员会、工会、学生、地方和指标终于同意一件事：政府必须宣布教育体系最终将走向哪里。可用方案已经被你过去的路线悄悄删减。",
+    "choices": [
+      {"id":"A","label":"全国统一教育","response":"全国获得同一种独立思考方式，统计局终于能够横向比较。","requirements":[{"field":"standardized_exam","operator":"==","value":true}],"effects":[{"field":"final_policy","operation":"set","value":"national_standard"},{"field":"story_step","operation":"set","value":19}]},
+      {"id":"B","label":"地方教育自治","response":"中央退出教育，全国出现数以万计的制度；教育部宣布多样性取得成功。","requirements":[{"field":"local_autonomy","operator":">=","value":1}],"effects":[{"field":"final_policy","operation":"set","value":"local_autonomy"},{"field":"local_autonomy","operation":"increment","value":2},{"field":"story_step","operation":"set","value":19}],"debtActions":[{"action":"resolve","topic":"local_autonomy"}]},
+      {"id":"C","label":"由专家接管","response":"专家接管教育改革，并询问国家其他部门为何还由非专家管理。","requirements":[{"field":"expert_power","operator":">=","value":1}],"effects":[{"field":"final_policy","operation":"set","value":"expert_rule"},{"field":"expert_power","operation":"increment","value":2},{"field":"story_step","operation":"set","value":19}],"debtActions":[{"action":"resolve","topic":"expert_mandate"}]},
+      {"id":"D","label":"终止教育改革","response":"政府宣布改革目标已经融入日常工作，因此不再需要改革本身。","effects":[{"field":"final_policy","operation":"set","value":"terminated"},{"field":"education_reform","operation":"set","value":"ended"},{"field":"story_step","operation":"set","value":19}]},
+      {"id":"E","label":"将改革永久化","response":"政府宣布教育改革是永远不能完成的历史进程，所有临时机构转为永久编制。","effects":[{"field":"final_policy","operation":"set","value":"permanent_reform"},{"field":"bureaucracy","operation":"increment","value":3},{"field":"story_step","operation":"set","value":19}]}
+    ]
+  },
+  {
+    "id": "E20", "title": "历史怎样评价你", "type": "ending", "thread": ["History", "Media"], "priority": 120, "weight": 1, "once": true,
+    "requirements": [{"field":"story_step","operator":"==","value":19}],
+    "actor": "共和国历 39 年版历史教科书", "actorEmoji": "📖",
+    "scene": "{{history:evaluation}} 真实档案还保留着学生的海报、教师的表格，以及尚未结清的政治债务。历史把当年的临时决定写成了深远战略。",
+    "choices": [
+      {"id":"A","label":"重新开始，接受另一种历史评价","response":"历史准备再次证明，你所有的临时决定都早有深意。","effects":[{"field":"prototype_complete","operation":"set","value":true}]}
+    ]
+  }
+]

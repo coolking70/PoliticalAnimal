@@ -1,0 +1,7 @@
+[
+  { "id": "ministry_education", "name": "教育部", "mission": "培养独立思考", "institutional_interest": "证明改革可以被管理" },
+  { "id": "ministry_finance", "name": "财政部", "mission": "为国家愿望寻找预算科目", "institutional_interest": "控制永久性支出" },
+  { "id": "statistics_office", "name": "国家统计局", "mission": "将国家现状转换成可报告的数据", "institutional_interest": "确保任何政策都有指标" },
+  { "id": "religious_council", "name": "宗教委员会", "mission": "守护传统", "institutional_interest": "确保独立思考有正确方向" },
+  { "id": "local_governments", "name": "地方政府联合会", "mission": "执行中央政策", "institutional_interest": "尽可能把政策变成建设项目" }
+]

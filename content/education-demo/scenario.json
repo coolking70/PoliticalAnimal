@@ -1,0 +1,19 @@
+{
+  "id": "education_demo",
+  "title": "狐狸共和国：伟大的教育改革",
+  "subtitle": "Stage 0 · 纯网状叙事原型",
+  "opening": "共和国历 34 年，你刚刚当选总统。窗外的广场仍在重复你的竞选口号：让每一只动物都拥有独立思考的能力。",
+  "initialState": {
+    "story_step": 0,
+    "education_reform": "not_started",
+    "reform_speed": 0,
+    "expert_power": 0,
+    "local_autonomy": 0,
+    "bureaucracy": 0,
+    "teacher_unrest": 0,
+    "religious_tension": 0,
+    "inequality": 0,
+    "standardized_exam": false,
+    "official_terms": []
+  }
+}

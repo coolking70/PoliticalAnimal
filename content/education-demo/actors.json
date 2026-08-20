@@ -1,0 +1,9 @@
+[
+  { "id": "president", "name": "总统阁下", "species": "fox", "emoji": "🦊", "role": "狐狸共和国总统" },
+  { "id": "minister_owl", "name": "奥维尔·夜羽", "species": "owl", "emoji": "🦉", "role": "教育部长" },
+  { "id": "minister_hamster", "name": "赫克托·满颊", "species": "hamster", "emoji": "🐹", "role": "财政部长" },
+  { "id": "statistics_office", "name": "国家统计局代表", "species": "cat", "emoji": "🐈", "role": "首席指标设计师" },
+  { "id": "teacher", "name": "教师工会代表", "species": "goat", "emoji": "🐐", "role": "一线教师" },
+  { "id": "religious_leader", "name": "牧首温顺三世", "species": "sheep", "emoji": "🐑", "role": "宗教委员会领袖" },
+  { "id": "governor_beaver", "name": "巴克·固坝", "species": "beaver", "emoji": "🦫", "role": "地方政府联合会主席" }
+]
