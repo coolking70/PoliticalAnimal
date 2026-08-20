@@ -1,4 +1,4 @@
-import type { GameSave } from '../models/game';
+import type { GameSave, HistoryEntry } from '../models/game';
 import { findMemory } from './memoryEngine';
 import { queryDebt } from './debtEngine';
 
@@ -28,12 +28,32 @@ export function generateHistoricalEvaluation(save: GameSave): string {
   return `五年后的共和国教材写道：本届政府${doctrine}。${measurement}${language}`;
 }
 
-export function renderNarrativeTemplate(template: string, save: GameSave): string {
+function displayValue(value: unknown): string {
+  if (Array.isArray(value)) return value.join('、');
+  if (value === true) return '是';
+  if (value === false) return '否';
+  return String(value ?? '未定义');
+}
+
+export function renderNarrativeTemplate(template: string, save: GameSave, choice?: HistoryEntry): string {
   return template
-    .replace(/\{\{memory:([^}]+)\}\}/g, (_, topic: string) =>
-      findMemory(save.memories, topic)?.statement ?? '政府始终尊重独立思考')
-    .replace(/\{\{debt:([^}]+)\}\}/g, (_, topic: string) =>
-      queryDebt(save.debts, topic)[0]?.description ?? '一项尚未被正式承认的承诺')
-    .replace(/\{\{state:([^}]+)\}\}/g, (_, field: string) => String(save.worldState[field] ?? '未定义'))
+    .replace(/\{\{memory:([^}:]+)(?::([^}]+))?\}\}/g, (_, topic: string, field?: string) => {
+      const memory = findMemory(save.memories, topic);
+      return displayValue(memory?.[(field ?? 'statement') as keyof typeof memory] ?? '政府始终尊重独立思考');
+    })
+    .replace(/\{\{debt:([^}:]+)(?::([^}]+))?\}\}/g, (_, topic: string, field?: string) => {
+      const matching = save.debts.filter((debt) => debt.topic === topic);
+      const debt = matching.find((item) => item.status === 'active') ?? matching.at(-1) ?? queryDebt(save.debts, topic)[0];
+      return displayValue(debt?.[(field ?? 'description') as keyof typeof debt] ?? '一项尚未被正式承认的承诺');
+    })
+    .replace(/\{\{state:([^}]+)\}\}/g, (_, field: string) => displayValue(save.worldState[field]))
+    .replace(/\{\{choice:(id|label|response)\}\}/g, (_, field: 'id' | 'label' | 'response') => {
+      const key = field === 'id' ? 'choiceId' : field === 'label' ? 'choiceLabel' : 'response';
+      return displayValue(choice?.[key]);
+    })
+    .replace(/\{\{official_terms:last\}\}/g, () => {
+      const terms = save.worldState.official_terms;
+      return Array.isArray(terms) ? terms.at(-1) ?? '尚未命名' : '尚未命名';
+    })
     .replace('{{history:evaluation}}', generateHistoricalEvaluation(save));
 }

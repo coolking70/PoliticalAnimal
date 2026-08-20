@@ -3,7 +3,7 @@ import { evaluateCondition } from '../src/engine/conditionEvaluator';
 import { applyEffects } from '../src/engine/effectExecutor';
 import { selectEvent } from '../src/engine/eventSelector';
 import { parseSave, serializeSave } from '../src/engine/saveEngine';
-import { choose, createGame, events, getCurrentEvent, getEligible } from '../src/store/gameStore';
+import { choose, createGame, dismissCurrentFraming, events, getCurrentEvent, getCurrentFraming, getEligible } from '../src/store/gameStore';
 import { addMemory, findMemory, getPublicPromises } from '../src/engine/memoryEngine';
 import { advanceDebtPressure, applyDebtActions, createDebt, getDebtIntensity, getDebtPressure, getDebtPressureCap } from '../src/engine/debtEngine';
 import { defaultScenarioId, getScenarioBundle, listScenarioIds } from '../src/content/scenarioRegistry';
@@ -60,6 +60,21 @@ describe('political memory and debt', () => {
     debts = applyDebtActions(debts, [{ action: 'resolve', topic: 'teacher_support' }]);
     expect(debts[0].status).toBe('paid');
     expect(getDebtPressure(debts, 'teacher_support')).toBe(0);
+  });
+
+  it('queries paid, broken, and expired debt statuses while pressure stays active-only', () => {
+    const template = {
+      creditor: 'teachers_union', type: 'staffing_promise', topic: 'teacher_support',
+      strength: 2, pressure: 1, description: '教师等待支持。', tags: ['teachers'],
+    };
+    const active = createDebt([], template, 'E07', 7);
+    const paid = applyDebtActions(active, [{ action: 'resolve', topic: 'teacher_support' }]);
+    const broken = applyDebtActions(active, [{ action: 'break', topic: 'teacher_support' }]);
+    const expired = [{ ...active[0], status: 'expired' as const }];
+    for (const [debts, status] of [[paid, 'paid'], [broken, 'broken'], [expired, 'expired']] as const) {
+      expect(evaluateCondition({ scope: 'debt', field: 'status', operator: '==', value: status }, {}, [], debts)).toBe(true);
+      expect(getDebtPressure(debts, 'teacher_support')).toBe(0);
+    }
   });
 });
 
@@ -191,18 +206,32 @@ describe('scenario runtime', () => {
     expect(game.status).toBe('completed');
     expect(game.currentEventId).toBeNull();
     expect(game.completedEvents).toContain('E20');
+    expect(game.pendingFramingIds.slice(-2)).toEqual(['F-E20-ARCHIVE', 'F-E20-FOREIGN']);
   });
 
-  it('serializes completed saves and migrates legacy saves to v3', () => {
+  it('queues and renders multiple post-choice framings without consuming a turn', () => {
+    const bundle = getScenarioBundle(defaultScenarioId);
+    const game = {
+      ...createGame(42),
+      worldState: { ...bundle.scenario.initialState, phase: 'implementation', reform_metric: 'creativity' },
+      completedEvents: ['E01', 'E02', 'E03', 'E04'],
+      currentEventId: 'E05',
+    };
+    const next = choose(game, getCurrentEvent(game)!.choices.find((choice) => choice.id === 'A')!);
+    expect(next.turn).toBe(game.turn + 1);
+    expect(next.pendingFramingIds).toEqual(['F-E05-GOV', 'F-E05-PRESS']);
+    const governmentMemo = getCurrentFraming(next)!;
+    expect(governmentMemo.type).toBe('government_memo');
+    expect(governmentMemo.renderedBody).toContain('批准全国考试');
+    const dismissed = dismissCurrentFraming(next);
+    expect(dismissed.turn).toBe(next.turn);
+    expect(getCurrentFraming(dismissed)?.type).toBe('newspaper');
+    expect(dismissed.seenFramingIds).toContain('F-E05-GOV');
+  });
+
+  it('serializes Stage 2 saves and deliberately rejects old save versions', () => {
     const completed = run(22, 1);
     expect(parseSave(serializeSave(completed))).toEqual(completed);
-    const legacy = {
-      saveVersion: 2, engineVersion: '0.2.0', scenario: 'education_demo', seed: 1, rngState: 1,
-      turn: 8, worldState: { story_step: 10 }, history: [], memories: [], debts: [], completedEvents: ['E10'], currentEventId: 'E11',
-    };
-    const migrated = parseSave(JSON.stringify(legacy));
-    expect(migrated.saveVersion).toBe(3);
-    expect(migrated.scenarioId).toBe('education_demo');
-    expect(migrated.worldState.phase).toBe('backlash');
+    expect(() => parseSave(JSON.stringify({ ...completed, saveVersion: 3, engineVersion: '0.3.0' }))).toThrow('存档版本不受支持');
   });
 });

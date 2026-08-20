@@ -24,6 +24,15 @@ Original prompt: 请参考 Political_Animal_Game_Design_v0.1.md，进行项目�
 - 第一轮 Stage 1.1 验证：17 项测试通过，10,000 Seed 全部完成 ending 且存在多种事件顺序。
 - Playwright 验证 Phase 候选权重 Debug、Actor/Institution 展示和正式 completed 结算页，状态与截图一致且控制台无错误。
 - Validator 再加入 actor/institution 归属一致性、condition/effect 类型规则与最终 ending phase 死路检查。
+- Stage 2：新增通用 Narrative Framing 数据模型与事件结算后队列，不改变事件调度与回合数。
+- 新增 Newspaper / TV News / Government Memo / Internal Memo 四类模板，统一实现、按 framing type 呈现明显不同的视觉语言。
+- Framing 模板解析支持 World State、Political Memory、Political Debt、实际 Choice、official_terms 与历史评价。
+- 教育 Demo 为 E05 / E12 / E13 / E14 / E16 / E17 / E20 配置 14 个政府、媒体、反对派、机构和国外观察版本。
+- Debt 条件查询改为可匹配 paid / broken / expired；事件调度 Debt Bonus 依然显式过滤 active debt。
+- 存档升级为 v4 / engine 0.4.0，按 Stage 2 边界不提供旧存档迁移。
+- Stage 2 验证：22 项 Vitest、6 项内容校验、10,000 Seed 全部通过，生产构建成功。
+- Playwright 实测 Newspaper、TV News、Government Memo、Internal Memo 的展示与连续阅读；截图、render_game_to_text 和控制台状态一致。
+- E20 实测为先正常结算 completed，再展示两个历史 framing，读完进入原结算页，无新线性节点或控制台错误。
 
 ## TODO
 

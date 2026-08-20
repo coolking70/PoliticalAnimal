@@ -2,6 +2,7 @@ import scenarioJson from '../../content/education-demo/scenario.json';
 import actorsJson from '../../content/education-demo/actors.json';
 import institutionsJson from '../../content/education-demo/institutions.json';
 import eventsJson from '../../content/education-demo/events/events.json';
+import framingsJson from '../../content/education-demo/framings.json';
 import type { ScenarioBundle } from '../models/game';
 
 const educationDemo = {
@@ -9,6 +10,7 @@ const educationDemo = {
   actors: actorsJson,
   institutions: institutionsJson,
   events: eventsJson,
+  framings: framingsJson,
 } as ScenarioBundle;
 
 const registry: Record<string, ScenarioBundle> = {
