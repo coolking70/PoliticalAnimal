@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { choose, createGame, getCurrentEvent } from '../src/store/gameStore';
 import { defaultScenarioId, getScenarioBundle, listScenarioIds } from '../src/content/scenarioRegistry';
 import { validateScenarioBundle } from '../src/content/contentValidator';
+import { formatPlayerValue } from '../src/engine/historyEngine';
 
 describe('education demo content', () => {
   it('passes actor, institution, framing, state, dependency, and ending validation for every registered scenario', () => {
@@ -40,6 +41,12 @@ describe('education demo content', () => {
     expect(codes).toContain('unknown_framing_event');
     expect(codes).toContain('unknown_framing_actor');
     expect(codes).toContain('unknown_framing_state_field');
+  });
+
+  it('rejects player display mappings for unknown world fields', () => {
+    const broken = structuredClone(getScenarioBundle(defaultScenarioId));
+    broken.scenario.playerDisplay!.fields!.teacher_unrst = { high: '教师不满高涨' };
+    expect(validateScenarioBundle(broken).map((issue) => issue.code)).toContain('unknown_player_display_field');
   });
 
   it('contains E01–E20 and a formal ending', () => {
@@ -100,5 +107,24 @@ describe('penguin strait content', () => {
   it('uses the selected official wording in later events and framings', () => {
     expect(bundle.events.some((event) => event.id !== 'P02' && event.scene.includes('{{official_terms:last}}'))).toBe(true);
     expect(bundle.framings.some((framing) => framing.body.includes('{{official_terms:last}}') || framing.title.includes('{{official_terms:last}}'))).toBe(true);
+  });
+
+  it('maps machine-like state values referenced by player-facing framings', () => {
+    for (const scenarioId of listScenarioIds()) {
+      const scenarioBundle = getScenarioBundle(scenarioId);
+      const templates = scenarioBundle.framings.flatMap((framing) => [framing.eyebrow, framing.title, framing.body, framing.footer].filter(Boolean) as string[]);
+      const referencedFields = new Set(templates.flatMap((template) => [...template.matchAll(/\{\{state:([^}]+)\}\}/g)].map((match) => match[1])));
+      for (const field of referencedFields) {
+        const possibleValues = new Set<unknown>([scenarioBundle.scenario.initialState[field]]);
+        for (const event of scenarioBundle.events) for (const choice of event.choices) {
+          for (const effect of choice.effects.filter((item) => item.field === field && item.operation === 'set')) possibleValues.add(effect.value);
+        }
+        for (const value of possibleValues) {
+          if (typeof value === 'string' && (value.includes('_') || ['active', 'paid', 'broken', 'expired'].includes(value))) {
+            expect(formatPlayerValue(value, scenarioBundle.scenario, field), `${scenarioId}.${field}.${value}`).not.toBe(value);
+          }
+        }
+      }
+    }
   });
 });

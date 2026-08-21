@@ -1,7 +1,7 @@
 {
   "id": "education_demo",
   "title": "狐狸共和国：伟大的教育改革",
-  "subtitle": "Stage 2 · Narrative Framing Layer",
+  "subtitle": "一场关于教育、指标与独立思考的政治讽刺",
   "playerRole": "狐狸共和国总统",
   "workspaceLabel": "总统办公室",
   "opening": "共和国历 34 年，你刚刚当选总统。窗外的广场仍在重复你的竞选口号：让每一只动物都拥有独立思考的能力。",
@@ -34,6 +34,21 @@
       "text": "五年后的共和国教材写道：本届政府成功避免了用同一种方法要求所有动物保持不同。由于一些政策拒绝被数字定义，它们取得了无法被数字否认的成功。"
     }
   ],
+  "playerDisplay": {
+    "fields": {
+      "standardized_exam": {
+        "true": "全国统一考试已经获准推行",
+        "false": "全国统一考试尚未获准推行"
+      },
+      "reform_metric": {
+        "satisfaction": "学生满意度",
+        "exam_scores": "统一考试成绩",
+        "creativity": "创造力指数",
+        "none": "不设单一指标",
+        "unset": "尚未选定指标"
+      }
+    }
+  },
   "stateSchema": {
     "phase": "string",
     "education_reform": "string",

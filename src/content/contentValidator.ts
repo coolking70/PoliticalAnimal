@@ -57,6 +57,11 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
   for (const field of Object.keys(bundle.scenario.initialState)) {
     if (!stateFields.has(field)) report('unknown_initial_field', `scenario.initialState.${field}`, `initialState 字段未在 stateSchema 声明：${field}`);
   }
+  for (const field of Object.keys(bundle.scenario.playerDisplay?.fields ?? {})) {
+    if (!stateFields.has(field) && !field.startsWith('debt.') && !field.startsWith('memory.') && !field.startsWith('choice.')) {
+      report('unknown_player_display_field', `scenario.playerDisplay.fields.${field}`, `玩家显示映射引用未知字段：${field}`);
+    }
+  }
 
   const phaseIndex = new Map(phaseIds.map((id, index) => [id, index]));
   const dependencyGraph = new Map<string, string[]>();

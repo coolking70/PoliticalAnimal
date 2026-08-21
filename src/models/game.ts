@@ -199,6 +199,10 @@ export interface Scenario {
     requirements?: Condition[];
     text: string;
   }[];
+  playerDisplay?: {
+    values?: Record<string, string>;
+    fields?: Record<string, Record<string, string>>;
+  };
 }
 
 export interface ScenarioBundle {

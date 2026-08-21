@@ -7,7 +7,7 @@
     "source": { "institutionId": "statistics_office" },
     "eyebrow": "国统教指〔34-05〕号",
     "title": "关于创造力可比性的行政决定",
-    "body": "经总统作出“{{choice:label}}”的决定，本局确认全国创造力可以在统一纸张、统一时间和统一自由答题区内进行客观比较。当前统一考试状态：{{state:standardized_exam}}。",
+    "body": "经总统作出“{{choice:label}}”的决定，本局确认全国创造力可以在统一纸张、统一时间和统一自由答题区内进行客观比较。依照本决定，{{state:standardized_exam}}。",
     "footer": "本文件的不同意见将作为创造力样本另行归档。"
   },
   {
@@ -42,7 +42,7 @@
     "choiceIds": ["C", "D"],
     "eyebrow": "限内部阅读·舆情快报",
     "title": "关于学生口号自我繁殖的风险评估",
-    "body": "总统处置为“{{choice:label}}”。当前学生不满指数为 {{state:student_unrest}}。建议减少公开说明；历史表明，解释栅栏会使公众注意到栅栏。",
+    "body": "总统处置为“{{choice:label}}”。舆情处已将学生不满评为第 {{state:student_unrest}} 级。建议减少公开说明；历史表明，解释栅栏会使公众注意到栅栏。",
     "footer": "传阅范围：知道已发生何事的官员。"
   },
   {
@@ -77,7 +77,7 @@
     "source": { "actorId": "fox_daily" },
     "eyebrow": "数据·头版",
     "title": "改革指标增长 42%，现实尚未完成同比追赶",
-    "body": "国家统计局宣布 {{state:reform_metric}} 指标取得突破。总统的实际决定是“{{choice:label}}”。有关部门表示，不应让教师和学生的个别感受干扰全国平均成功。",
+    "body": "国家统计局宣布，衡量改革的“{{state:reform_metric}}”取得突破。总统的实际决定是“{{choice:label}}”。有关部门表示，不应让教师和学生的个别感受干扰全国平均成功。",
     "footer": "数据经统计局审核，统计局经数据证明可信。"
   },
   {
@@ -100,7 +100,7 @@
     "source": { "actorId": "evening_news" },
     "eyebrow": "LIVE 全国教育特别报道",
     "title": "教师集体暂停授课，政府表示课堂仍是国家重点",
-    "body": "教师工会今日发起全国行动。总统已选择“{{choice:label}}”。该政治债务目前状态为 {{debt:teacher_support:status}}，请观众以官方翻译为准。",
+    "body": "教师工会今日发起全国行动。总统已选择“{{choice:label}}”。工会记录显示，此前的政府承诺{{debt:teacher_support:status}}；教育部则请观众等待下一版解释。",
     "footer": "画面中黑板上的抗议内容已做教学处理。"
   },
   {
@@ -110,8 +110,8 @@
     "stance": "institution",
     "source": { "institutionId": "teachers_union" },
     "eyebrow": "工会内部通报",
-    "title": "政府回应与债务状态核对",
-    "body": "政府回应：{{choice:response}}原承诺为“{{debt:teacher_support:description}}”，当前帐面状态：{{debt:teacher_support:status}}。请各地分会区分语言上的复课与实际上的上课。",
+    "title": "政府回应与原承诺核对",
+    "body": "政府回应：{{choice:response}}原承诺为“{{debt:teacher_support:description}}”，工会档案将其标记为{{debt:teacher_support:status}}。请各地分会区分语言上的复课与实际上的上课。",
     "footer": "会员阅读后无需删除，政治记忆将自行留存。"
   },
   {
@@ -133,7 +133,7 @@
     "source": { "actorId": "evening_news" },
     "eyebrow": "特别报道·建设性独立思考",
     "title": "学生运动进入新阶段",
-    "body": "总统今日作出“{{choice:label}}”的处置。与学生相关的政治债务状态为 {{debt:student_expectations:status}}。官方强调，引用旧话不等于理解当前的旧话。",
+    "body": "总统今日作出“{{choice:label}}”的处置。学生团体表示，政府对他们作出的承诺{{debt:student_expectations:status}}。官方强调，引用旧话不等于理解当前的旧话。",
     "footer": "本台已将现场口号降噪，以便观众听清官方解释。"
   },
   {
