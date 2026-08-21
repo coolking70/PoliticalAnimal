@@ -189,3 +189,7 @@ content/energy-crisis/
 失败报告格式为 `[code] path: message`。任何 Draft 格式错误或 Validator 错误都会在写入正式目录前终止。
 
 完整可导入示例见 `drafts/energy-crisis.ai-draft.json`，机器可读约束见 `docs/ai-draft.schema.json`。
+
+## 9. LLM Generation
+
+Stage 5 可通过 `npm run generate-scenario -- "<主题>"` 分阶段生成本规范定义的 AI Draft。Planner / Structure / Content / Critic 各自输出结构化 JSON；最终 Draft 仍必须经过本页所述的 `normalizeAiDraft` 与 Content Validator。配置、Repair 上限、失败记录和真实 API Smoke Test 见 [`docs/LLM_GENERATION_PIPELINE.md`](LLM_GENERATION_PIPELINE.md)。

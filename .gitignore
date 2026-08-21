@@ -1,6 +1,9 @@
 node_modules/
 dist/
 output/
+.env
+.env.*
+drafts/generated/
 .DS_Store
 *.local
 *.tsbuildinfo

@@ -1,6 +1,6 @@
 # Political Animal / 政治动物
 
-基于《Political Animal》v0.1 设计文档开发的 Stage 4 浏览器原型。现有三个可完整游玩的独立剧本：“狐狸共和国：伟大的教育改革”、“企鹅海峡危机”与由 AI Draft Pipeline 生成的短篇“狐狸共和国能源危机”。
+基于《Political Animal》v0.1 设计文档开发的 Stage 5 浏览器原型。现有三个可完整游玩的独立剧本，并提供由真实 LLM 主题生成合法 AI Draft 的离线内容生产 CLI。
 
 ## 已实现
 
@@ -33,6 +33,11 @@
 - Importer 在任何格式或校验错误时先终止，不写入不完整的正式内容，也拒绝覆盖已有 Scenario
 - Content Validator 增强 AI 防护：非法 ID/operator/effect/template、未知引用、未来依赖、开场与 ending 结构死路、玩家枚举缺失映射
 - “狐狸共和国能源危机”通过 `drafts/energy-crisis.ai-draft.json` 实际导入：8 个事件、4 个阶段、5 个 Framing、3 个结局
+- 独立 OpenAI-compatible Provider；API URL、Key、Model 与 timeout 全部通过环境变量配置
+- Planner → Structure → Content → Critic 四阶段结构化 JSON 生成，后一阶段显式读取前一阶段结果
+- Validator 失败后最多 3 次 LLM Repair；逐轮保留错误与修复记录，失败 Draft 不进入正式内容
+- `generate-scenario` CLI 可只保存 Draft，也可继续调用现有 Importer；模型没有源码或文件修改能力
+- 固定 fixture 覆盖无网络自动测试，真实 API Smoke Test 使用独立命令且不进入 CI
 - Actor / Institution ID 引用与集中内容资料
 - 正式 `playing / completed` 状态和可正常结算的 ending
 - v4 本地存档/读取与同 Seed 可复现（Stage 2 按需不兼容旧存档）
@@ -68,6 +73,19 @@ npm run import-scenario -- drafts/energy-crisis.ai-draft.json --output-root /tmp
 
 Importer 只补展示性或调度性的安全默认值，不猜测关键剧情逻辑。完整字段说明、Condition / Effect / Memory / Debt / Framing / `playerDisplay` 用法见 [AI Authoring Spec](docs/AI_AUTHORING_SPEC.md)。
 
+LLM 剧本生成：
+
+```bash
+export POLITICAL_ANIMAL_LLM_API_URL="https://api.example.com/v1/chat/completions"
+export POLITICAL_ANIMAL_LLM_API_KEY="..."
+export POLITICAL_ANIMAL_LLM_MODEL="your-model"
+
+npm run generate-scenario -- "一场因为首都禁止鸽子喂食而引发的政治危机"
+# 校验成功后直接继续 Importer：追加 --import
+```
+
+配置、阶段产物、Repair 报告和独立真实 API Smoke Test 见 [LLM Generation Pipeline](docs/LLM_GENERATION_PIPELINE.md)。密钥不会写入项目、Draft 或生成报告。
+
 ## 操作
 
 - 数字键 `1–4`：选择决策
@@ -84,14 +102,15 @@ content/education-demo/  教育改革剧本 JSON
 content/penguin-strait/  企鹅海峡危机剧本 JSON
 content/energy-crisis/    由 AI Draft Importer 生成的能源危机剧本
 drafts/                   单文件 AI Draft 源文件
-docs/                     AI Authoring Spec 与 Draft JSON Schema
-scripts/                  Scenario Importer CLI
-src/engine/              条件、效果、事件选择、Framing、RNG、存档
-src/content/             Scenario Registry 与内容校验器
-src/models/              数据类型
-src/store/               场景运行状态与推进接口
-src/                     React 界面
-tests/                   引擎与内容测试
+docs/                     Authoring Spec、Draft Schema 与 LLM Pipeline 文档
+scripts/                  Scenario Importer 与 LLM Generation CLI
+src/generation/           Provider、阶段提示、JSON Schema 与 Repair Pipeline
+src/engine/               条件、效果、事件选择、Framing、RNG、存档
+src/content/              Scenario Registry 与内容校验器
+src/models/               数据类型
+src/store/                场景运行状态与推进接口
+src/                      React 界面
+tests/                    引擎、内容与 LLM Fixture 测试
 ```
 
-Stage 4 验证离线结构化 AI 内容生产管线；不调用在线 LLM API，不做实时生成、NPC AI、数据库或后台服务。
+Stage 5 接入命令行真实 LLM 内容生成，但不在游戏运行时调用 AI，不做 NPC 对话、玩家 UI 生成器、数据库或后台服务。

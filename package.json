@@ -1,14 +1,16 @@
 {
   "name": "political-animal",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "validate-content": "vitest run tests/contentValidator.test.ts",
-    "import-scenario": "node --experimental-strip-types scripts/import-scenario.ts"
+    "import-scenario": "node --experimental-strip-types scripts/import-scenario.ts",
+    "generate-scenario": "node --experimental-strip-types scripts/generate-scenario.ts",
+    "smoke:llm": "node --experimental-strip-types scripts/generate-scenario.ts --smoke"
   },
   "dependencies": {
     "react": "latest",
