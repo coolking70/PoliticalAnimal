@@ -9,11 +9,24 @@ export function generateHistoricalEvaluation(save: GameSave, scenario?: Scenario
   return evaluation?.text ?? '历史尚未收到可供编辑的官方结论。';
 }
 
-function displayValue(value: unknown): string {
-  if (Array.isArray(value)) return value.join('、');
-  if (value === true) return '是';
-  if (value === false) return '否';
-  return String(value ?? '未定义');
+const commonPlayerValues: Record<string, string> = {
+  active: '尚未兑现',
+  paid: '已兑现',
+  broken: '已违约',
+  expired: '已失效',
+  true: '是',
+  false: '否',
+  unset: '尚未决定',
+  undefined: '尚未决定',
+};
+
+export function formatPlayerValue(value: unknown, scenario?: Scenario, field?: string): string {
+  if (Array.isArray(value)) return value.map((item) => formatPlayerValue(item, scenario, field)).join('、');
+  const raw = String(value ?? 'undefined');
+  return (field ? scenario?.playerDisplay?.fields?.[field]?.[raw] : undefined)
+    ?? scenario?.playerDisplay?.values?.[raw]
+    ?? commonPlayerValues[raw]
+    ?? raw;
 }
 
 export function renderNarrativeTemplate(template: string, save: GameSave, choice?: HistoryEntry, scenario?: Scenario): string {
@@ -22,18 +35,20 @@ export function renderNarrativeTemplate(template: string, save: GameSave, choice
     .replace(/\{\{memory:([^}:]+)(?::([^}]+))?\}\}/g, (_, topic: string, field?: string) => {
       const memory = findMemory(save.memories, topic);
       if (!memory) return field ? '无记录' : '政府始终尊重独立思考';
-      return displayValue(memory[(field ?? 'statement') as keyof typeof memory]);
+      const resolvedField = field ?? 'statement';
+      return formatPlayerValue(memory[resolvedField as keyof typeof memory], scenario, `memory.${resolvedField}`);
     })
     .replace(/\{\{debt:([^}:]+)(?::([^}]+))?\}\}/g, (_, topic: string, field?: string) => {
       const matching = save.debts.filter((debt) => debt.topic === topic);
       const debt = matching.find((item) => item.status === 'active') ?? matching.at(-1) ?? queryDebt(save.debts, topic)[0];
       if (!debt) return field ? '无记录' : '一项尚未被正式承认的承诺';
-      return displayValue(debt[(field ?? 'description') as keyof typeof debt]);
+      const resolvedField = field ?? 'description';
+      return formatPlayerValue(debt[resolvedField as keyof typeof debt], scenario, `debt.${resolvedField}`);
     })
-    .replace(/\{\{state:([^}]+)\}\}/g, (_, field: string) => displayValue(save.worldState[field]))
+    .replace(/\{\{state:([^}]+)\}\}/g, (_, field: string) => formatPlayerValue(save.worldState[field], scenario, field))
     .replace(/\{\{choice:(id|label|response)\}\}/g, (_, field: 'id' | 'label' | 'response') => {
       const key = field === 'id' ? 'choiceId' : field === 'label' ? 'choiceLabel' : 'response';
-      return displayValue(choice?.[key]);
+      return formatPlayerValue(choice?.[key], scenario, `choice.${field}`);
     })
     .replace(/\{\{official_terms:last\}\}/g, () => {
       const terms = save.worldState.official_terms;

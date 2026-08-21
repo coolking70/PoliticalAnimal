@@ -1,7 +1,7 @@
 {
   "id": "penguin_strait",
   "title": "企鹅海峡危机",
-  "subtitle": "Stage 3 · Cross-Scenario Validation",
+  "subtitle": "一场关于海峡、面子与外交措辞的政治讽刺",
   "playerRole": "狐狸共和国外交部长",
   "workspaceLabel": "外交部战情室",
   "opening": "凌晨四点，企鹅海上共和国扣押了两艘狐狸渔船。争议小岛上没有居民，只有一块被两国地图同时印成本国颜色的石头。总统要求你在开盘前解决问题，或至少为它选一个不会开战的名字。",
@@ -31,6 +31,32 @@
     },
     { "text": "海峡危机最终被归档为一次成功的未定义事件。" }
   ],
+  "playerDisplay": {
+    "fields": {
+      "patrol_authorized": {
+        "true": "巡航已经获准",
+        "false": "巡航尚未获准"
+      },
+      "red_line_honored": {
+        "true": "红线已经付诸行动",
+        "false": "红线未以行动兑现"
+      },
+      "agreement_type": {
+        "mutual_withdrawal": "双方同步撤离",
+        "temporary_committee": "永久临时海域管理委员会",
+        "unilateral_pause": "我方单方暂停巡航",
+        "never_war_agreement": "《从未发生战争协议》",
+        "unset": "尚未达成安排"
+      },
+      "crisis_status": {
+        "detention": "渔船仍被扣押",
+        "settled": "危机已经解决",
+        "frozen": "危机转入长期冻结",
+        "cooled": "局势已经降温",
+        "emergency_settlement": "双方紧急停火"
+      }
+    }
+  },
   "stateSchema": {
     "phase": "string",
     "crisis_status": "string",

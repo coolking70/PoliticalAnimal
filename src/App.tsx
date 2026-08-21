@@ -4,6 +4,7 @@ import { dismissCurrentFraming, getCurrentEvent, getCurrentFraming, getWeightedC
 import { defaultScenarioId, getScenarioBundle, listScenarios } from './content/scenarioRegistry';
 import { loadFromStorage, saveToStorage } from './engine/saveEngine';
 import { getDebtPressureCap } from './engine/debtEngine';
+import { formatPlayerValue } from './engine/historyEngine';
 import './styles.css';
 
 type Tab = 'scene' | 'history' | 'archive' | 'settings' | 'debug';
@@ -26,6 +27,22 @@ const framingLabels = {
   internal_memo: { format: '内部备忘录', action: '阅后收起' },
 } as const;
 
+const framingStanceLabels = {
+  government: '政府口径',
+  media: '媒体报道',
+  opposition: '对方视角',
+  institution: '机构立场',
+  foreign_observer: '国际观察',
+} as const;
+
+const eventTypeLabels = {
+  core: '重要议程',
+  reactive: '局势回应',
+  ambient: '社会回声',
+  debt: '承诺追索',
+  ending: '历史终章',
+} as const;
+
 function FramingView({ framing, seenCount, pendingCount, onDismiss }: {
   framing: ResolvedNarrativeFraming;
   seenCount: number;
@@ -37,7 +54,7 @@ function FramingView({ framing, seenCount, pendingCount, onDismiss }: {
     <div className={`framing-stage framing-${framing.type}`} data-framing-id={framing.id}>
       <article className="framing-document">
         <header className="framing-header">
-          <div className="framing-source"><span>{framing.sourceEmoji ?? '◆'}</span><div><b>{framing.sourceName}</b><small>{labels.format} · {framing.stance.replace('_', ' ')}</small></div></div>
+          <div className="framing-source"><span>{framing.sourceEmoji ?? '◆'}</span><div><b>{framing.sourceName}</b><small>{labels.format} · {framingStanceLabels[framing.stance]}</small></div></div>
           <span className="framing-counter">已阅 {seenCount} · 待阅 {pendingCount}</span>
         </header>
         <div className="framing-rule" />
@@ -48,7 +65,7 @@ function FramingView({ framing, seenCount, pendingCount, onDismiss }: {
         <div className="framing-stamp">{framing.type === 'tv_news' ? 'ON AIR' : framing.type === 'newspaper' ? '号外' : framing.type === 'government_memo' ? '已阅' : '内部'}</div>
       </article>
       <button className="primary-button framing-dismiss" onClick={onDismiss}>{labels.action} →</button>
-      <p className="framing-hint">Framing 只改变事实被看见的方式，不占用剧情回合。</p>
+      <p className="framing-hint">读完这份材料后，局势将继续推进。</p>
     </div>
   );
 }
@@ -59,17 +76,20 @@ export default function App() {
   const [game, setGame] = useState<GameSave | null>(null);
   const [tab, setTab] = useState<Tab>('scene');
   const [notice, setNotice] = useState('');
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const current = game ? getCurrentEvent(game) : null;
   const currentFraming = game ? getCurrentFraming(game) : null;
   const weightedCandidates = useMemo(() => game ? getWeightedCandidates(game) : [], [game]);
-  const activeScenario = getScenarioBundle(game?.scenarioId ?? selectedScenarioId).scenario;
+  const activeBundle = getScenarioBundle(game?.scenarioId ?? selectedScenarioId);
+  const activeScenario = activeBundle.scenario;
+  const currentPhase = activeScenario.phases.find((phase) => phase.id === game?.worldState.phase);
   const scenarios = useMemo(() => listScenarios(), []);
   const tabs: { id: Tab; label: string }[] = useMemo(() => [
     { id: 'scene', label: activeScenario.workspaceLabel },
     { id: 'history', label: '历史' },
     { id: 'archive', label: '政治档案' },
     { id: 'settings', label: '设置' },
-    { id: 'debug', label: 'Debug' },
+    { id: 'debug', label: '调试' },
   ], [activeScenario.workspaceLabel]);
 
   const begin = (nextSeed = seed, scenarioId = selectedScenarioId) => {
@@ -123,8 +143,29 @@ export default function App() {
     }
   };
 
+  const returnToScenarioMenu = () => {
+    setGame(null);
+    setTab('scene');
+    setNotice('');
+    setShowExitConfirm(false);
+  };
+
+  const requestReturnToScenarioMenu = () => {
+    if (!game) return;
+    if (game.status === 'playing') setShowExitConfirm(true);
+    else returnToScenarioMenu();
+  };
+
+  const entityName = (id: string) => activeBundle.actors.find((actor) => actor.id === id)?.name
+    ?? activeBundle.institutions.find((institution) => institution.id === id)?.name
+    ?? id;
+
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
+      if (showExitConfirm) {
+        if (event.key === 'Escape') setShowExitConfirm(false);
+        return;
+      }
       if (event.key.toLowerCase() === 'f') {
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen();
@@ -210,13 +251,14 @@ export default function App() {
             <span className="seed-chip">SEED {game?.seed ?? seed}</span>
             <button className="quiet-button" onClick={save} disabled={!game}>存档</button>
             <button className="quiet-button" onClick={load}>读取</button>
+            {game && <button className="quiet-button home-button" onClick={requestReturnToScenarioMenu}>剧本首页</button>}
           </div>
         </header>
 
         {!game ? (
           <main className="menu-card">
             <div className="seal">🦊</div>
-            <p className="eyebrow gold">STAGE 3 · CROSS-SCENARIO VALIDATION</p>
+            <p className="eyebrow gold">狐狸共和国政治档案</p>
             <h2>{activeScenario.title}</h2>
             <p className="menu-role">玩家身份：{activeScenario.playerRole}</p>
             <p className="menu-copy">{activeScenario.opening}</p>
@@ -245,7 +287,7 @@ export default function App() {
                   {item.label}
                 </button>
               ))}
-              <div className="turn-card"><span>{String(game.worldState.phase)}</span><strong>{game.status === 'completed' ? '本局已归档' : `第 ${game.turn + 1} 回合`}</strong></div>
+              <div className="turn-card"><span>{currentPhase?.label ?? '局势推进中'}</span><strong>{game.status === 'completed' ? '本局已归档' : `第 ${game.turn + 1} 回合`}</strong></div>
             </nav>
 
             <section className="content-panel">
@@ -254,11 +296,11 @@ export default function App() {
                 <FramingView framing={currentFraming} seenCount={game.seenFramingIds.length} pendingCount={game.pendingFramingIds.length} onDismiss={dismissFraming} />
               )}
               {tab === 'scene' && !currentFraming && game.status === 'completed' && (
-                <div className="menu-card completion-card"><div className="seal">📚</div><p className="eyebrow gold">SCENARIO COMPLETE</p><h2>本局已经进入历史</h2><p className="menu-copy">最终事件已正常结算，所有选择、记忆、债务与历史记录均保留在当前存档中。</p><button className="primary-button" onClick={() => begin(seed, game.scenarioId)}>使用相同 Seed 重新开始</button></div>
+                <div className="menu-card completion-card"><div className="seal">📚</div><p className="eyebrow gold">剧本完成</p><h2>本局已经进入历史</h2><p className="menu-copy">你的选择、承诺与留下的政治账目，已经成为这段历史的一部分。</p><div className="menu-actions"><button className="primary-button" onClick={returnToScenarioMenu}>返回剧本选择</button><button className="secondary-button" onClick={() => begin(seed, game.scenarioId)}>以相同档案重演</button></div></div>
               )}
               {tab === 'scene' && !currentFraming && current && (
                 <div className="scene-view">
-                  <div className="event-meta"><span>{current.type.toUpperCase()}</span><span>{current.thread.join(' / ')}</span><span>{current.id}</span></div>
+                  <div className="event-meta"><span>{currentPhase?.label ?? '共和国议程'}</span><span>{eventTypeLabels[current.type]}</span></div>
                   <div className="speaker-block">
                     <div className="portrait" aria-hidden="true">{current.actorEmoji}</div>
                     <div><p className="eyebrow">{current.institutionName} · {current.actorRole}</p><h2>{current.actorName}</h2></div>
@@ -288,12 +330,12 @@ export default function App() {
               {tab === 'archive' && (
                 <div className="page-view archive-view"><p className="eyebrow gold">POLITICAL ARCHIVE</p><h2>政治档案</h2>
                   <div className="archive-summary"><article><span>政治记忆</span><strong>{game.memories.length}</strong></article><article><span>未结债务</span><strong>{game.debts.filter((debt) => debt.status === 'active').length}</strong></article><article><span>官方措辞</span><strong>{Array.isArray(game.worldState.official_terms) ? game.worldState.official_terms.length : 0}</strong></article></div>
-                  <section className="archive-section"><h3>公开讲话与承诺</h3>{!game.memories.length ? <p className="empty">总统尚未留下可供未来引用的话。</p> : <div className="record-list">{[...game.memories].reverse().map((memory) => <article key={memory.id}><div><span>{memory.id} · 第 {memory.createdAtTurn} 回合</span><b>{memory.topic}</b></div><blockquote>“{memory.statement}”</blockquote><small>重要度 {memory.importance} · {memory.public ? '公开' : '内部'} · {memory.active ? '有效' : '失效'}</small></article>)}</div>}</section>
-                  <section className="archive-section"><h3>政治债务</h3>{!game.debts.length ? <p className="empty">目前没有机构承认政府欠了它什么。</p> : <div className="record-list debt-list">{[...game.debts].reverse().map((debt) => <article key={debt.id} className={`debt-${debt.status}`}><div><span>{debt.id} · {Array.isArray(debt.creditor) ? debt.creditor.join('、') : debt.creditor}</span><b>{debt.status}</b></div><p>{debt.description}</p><small>强度 {debt.strength} · 压力 {debt.pressure}/{getDebtPressureCap(debt)} · {debt.topic}</small></article>)}</div>}</section>
+                  <section className="archive-section"><h3>公开讲话与承诺</h3>{!game.memories.length ? <p className="empty">政府尚未留下可供未来引用的话。</p> : <div className="record-list">{[...game.memories].reverse().map((memory) => <article key={memory.id}><div><span>第 {memory.createdAtTurn} 回合留下</span><b>{entityName(memory.speaker)}</b></div><blockquote>“{memory.statement}”</blockquote><small>{memory.public ? '公开表态' : '内部记录'} · {memory.active ? '仍可被引用' : '已经失效'}</small></article>)}</div>}</section>
+                  <section className="archive-section"><h3>政治债务</h3>{!game.debts.length ? <p className="empty">目前没有机构承认政府欠了它什么。</p> : <div className="record-list debt-list">{[...game.debts].reverse().map((debt) => <article key={debt.id} className={`debt-${debt.status}`}><div><span>{(Array.isArray(debt.creditor) ? debt.creditor : [debt.creditor]).map(entityName).join('、')}</span><b>{formatPlayerValue(debt.status, activeScenario, 'debt.status')}</b></div><p>{debt.description}</p><small>政治压力 {debt.pressure}/{getDebtPressureCap(debt)} · 影响程度 {debt.strength}</small></article>)}</div>}</section>
                 </div>
               )}
               {tab === 'settings' && (
-                <div className="page-view"><p className="eyebrow gold">SETTINGS</p><h2>设置</h2><div className="settings-row"><div><strong>全屏模式</strong><p>演说需要更大的舞台。</p></div><button className="secondary-button" onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()}>切换（F）</button></div><div className="settings-row"><div><strong>重新开始</strong><p>使用相同 Seed 重演另一种历史。</p></div><button className="secondary-button" onClick={() => begin(seed, game.scenarioId)}>重新开始当前剧本</button></div></div>
+                <div className="page-view"><p className="eyebrow gold">游戏选项</p><h2>设置</h2><div className="settings-row"><div><strong>全屏模式</strong><p>演说需要更大的舞台。</p></div><button className="secondary-button" onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()}>切换（F）</button></div><div className="settings-row"><div><strong>重新开始</strong><p>使用相同档案编号重演另一种历史。</p></div><button className="secondary-button" onClick={() => begin(seed, game.scenarioId)}>重新开始当前剧本</button></div><div className="settings-row"><div><strong>返回剧本选择</strong><p>离开当前剧本，选择另一段政治生涯。</p></div><button className="secondary-button danger-button" onClick={requestReturnToScenarioMenu}>返回剧本首页</button></div></div>
               )}
               {tab === 'debug' && (
                 <div className="page-view debug-view"><p className="eyebrow gold">ENGINE INSPECTOR</p><h2>Debug 面板</h2><div className="debug-grid"><section><h3>运行状态</h3><pre>{JSON.stringify({ status: game.status, phase: game.worldState.phase, turn: game.turn, scenarioId: game.scenarioId, seed: game.seed, rngState: game.rngState, currentEvent: game.currentEventId, completedEvents: game.completedEvents, pendingFramingIds: game.pendingFramingIds, seenFramingIds: game.seenFramingIds }, null, 2)}</pre></section><section><h3>候选事件权重</h3><pre>{JSON.stringify(weightedCandidates.map((candidate) => ({ id: candidate.event.id, base: candidate.baseWeight, priority: candidate.priorityBonus, debt: Number(candidate.debtBonus.toFixed(2)), memory: Number(candidate.memoryBonus.toFixed(2)), thread: candidate.threadBonus, urgency: Number(candidate.urgencyBonus.toFixed(2)), repetition: candidate.repetitionPenalty, final: Number(candidate.finalWeight.toFixed(2)) })), null, 2)}</pre></section><section><h3>World State</h3><pre>{JSON.stringify(game.worldState, null, 2)}</pre></section><section><h3>Memories</h3><pre>{JSON.stringify(game.memories, null, 2)}</pre></section><section><h3>Debts</h3><pre>{JSON.stringify(game.debts, null, 2)}</pre></section></div></div>
@@ -301,8 +343,21 @@ export default function App() {
             </section>
           </main>
         )}
-        <footer><span>原型版本 0.5.0 · Stage 3</span><span>引擎不关心议题，制度总会找到新的借口。</span></footer>
+        <footer><span>《政治动物》试玩版</span><span>制度总会找到新的借口。</span></footer>
       </div>
+      {showExitConfirm && (
+        <div className="modal-backdrop">
+          <section className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="exit-confirm-title">
+            <p className="eyebrow gold">返回剧本选择</p>
+            <h2 id="exit-confirm-title">要放弃当前剧本吗？</h2>
+            <p>确定放弃当前剧本并返回首页吗？尚未保存的游戏进度将会丢失。已有的手动存档不会被删除。</p>
+            <div className="modal-actions">
+              <button className="secondary-button" autoFocus onClick={() => setShowExitConfirm(false)}>继续游戏</button>
+              <button className="primary-button danger-primary" onClick={returnToScenarioMenu}>放弃并返回</button>
+            </div>
+          </section>
+        </div>
+      )}
     </>
   );
 }

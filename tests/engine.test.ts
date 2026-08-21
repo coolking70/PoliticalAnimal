@@ -7,6 +7,7 @@ import { choose, createGame, dismissCurrentFraming, getCurrentEvent, getCurrentF
 import { addMemory, findMemory, getPublicPromises } from '../src/engine/memoryEngine';
 import { advanceDebtPressure, applyDebtActions, createDebt, getDebtIntensity, getDebtPressure, getDebtPressureCap } from '../src/engine/debtEngine';
 import { defaultScenarioId, getScenarioBundle, listScenarioIds } from '../src/content/scenarioRegistry';
+import { formatPlayerValue, renderNarrativeTemplate } from '../src/engine/historyEngine';
 
 describe('condition and effect engines', () => {
   const state = { score: 2, tags: ['promise'], active: true };
@@ -148,6 +149,17 @@ describe('scenario runtime', () => {
     expect(listScenarioIds()).toEqual(['education_demo', 'penguin_strait']);
     const game = createGame(1, defaultScenarioId);
     expect(game.scenarioId).toBe(defaultScenarioId);
+  });
+
+  it('renders common and scenario-specific machine values as player-facing language', () => {
+    const penguin = getScenarioBundle('penguin_strait').scenario;
+    expect(formatPlayerValue('active', penguin, 'debt.status')).toBe('尚未兑现');
+    expect(formatPlayerValue('paid', penguin, 'debt.status')).toBe('已兑现');
+    expect(formatPlayerValue('broken', penguin, 'debt.status')).toBe('已违约');
+    expect(formatPlayerValue('expired', penguin, 'debt.status')).toBe('已失效');
+    expect(formatPlayerValue('mutual_withdrawal', penguin, 'agreement_type')).toBe('双方同步撤离');
+    const save = { ...createGame(4, 'penguin_strait'), worldState: { ...penguin.initialState, agreement_type: 'mutual_withdrawal' } };
+    expect(renderNarrativeTemplate('安排如下：{{state:agreement_type}}。', save, undefined, penguin)).toBe('安排如下：双方同步撤离。');
   });
 
   it('same seed and choices produce exactly the same completed save', () => {

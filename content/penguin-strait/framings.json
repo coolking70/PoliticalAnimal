@@ -17,7 +17,7 @@
   },
   {
     "id": "PF-P03-NAVY", "eventId": "P03", "type": "internal_memo", "stance": "institution", "source": { "institutionId": "fox_navy" },
-    "eyebrow": "海军内部·行动准备摘要", "title": "巡航授权与外交背书对照表", "body": "文官决定：{{choice:label}}。当前巡航授权：{{state:patrol_authorized}}；海军姿态指数：{{state:naval_posture}}。如外交部后续重新定义任务，请确保新定义不短于舰船转弯半径。", "footer": "政治债务状态：{{debt:naval_backing:status}}。"
+    "eyebrow": "海军内部·行动准备摘要", "title": "巡航命令与外交背书核对", "body": "文官决定：{{choice:label}}。据此，{{state:patrol_authorized}}；舰队按第 {{state:naval_posture}} 级戒备方案准备。如外交部后续重新定义任务，请确保新定义不短于舰船转弯半径。", "footer": "海军认为外交部此前的支持承诺{{debt:naval_backing:status}}。"
   },
   {
     "id": "PF-P04-TV", "eventId": "P04", "type": "tv_news", "stance": "media", "source": { "actorId": "anchor_fox" },
@@ -37,7 +37,7 @@
   },
   {
     "id": "PF-P09-BRIEF", "eventId": "P09", "type": "internal_memo", "stance": "institution", "source": { "institutionId": "fox_navy" },
-    "eyebrow": "军政协调会议纪要", "title": "红线兑现状态评估", "body": "外交部处置：{{choice:response}}公开红线为“{{memory:red_line}}”，当前系统记录的兑现状态为 {{state:red_line_honored}}，海军相关政治债务状态为 {{debt:naval_backing:status}}。", "footer": "如记录与公开口径不一致，以能在议会宣读的版本为准。"
+    "eyebrow": "军政协调会议纪要", "title": "红线处置复盘", "body": "外交部处置：{{choice:response}}公开红线为“{{memory:red_line}}”。参谋部据行动结果认定，{{state:red_line_honored}}；海军则认为外交部此前的支持承诺{{debt:naval_backing:status}}。", "footer": "如会议结论与公开口径不一致，以能在议会宣读的版本为准。"
   },
   {
     "id": "PF-P11-LEAK", "eventId": "P11", "type": "newspaper", "stance": "foreign_observer", "source": { "label": "《海外信天翁日报》" },
@@ -45,7 +45,7 @@
   },
   {
     "id": "PF-P15-ACCORD", "eventId": "P15", "type": "government_memo", "stance": "government", "source": { "institutionId": "fox_foreign_ministry" },
-    "eyebrow": "协议签署后说明", "title": "关于“{{official_terms:last}}”阶段性结束的公报", "body": "双方已达成“{{choice:label}}”安排。该安排不影响主权主张，不构成法律先例，不承认任何一方曾经需要让步，并将实际改变舰船和渔民的位置。", "footer": "协议类型：{{state:agreement_type}}。"
+    "eyebrow": "协议签署后说明", "title": "关于“{{official_terms:last}}”阶段性结束的公报", "body": "双方已达成“{{choice:label}}”安排。该安排不影响主权主张，不构成法律先例，不承认任何一方曾经需要让步，并将实际改变舰船和渔民的位置。", "footer": "本次安排将依照“{{state:agreement_type}}”执行。"
   },
   {
     "id": "PF-P15-PENGUIN", "eventId": "P15", "type": "newspaper", "stance": "opposition", "source": { "label": "《企鹅海上日报》" },
@@ -53,6 +53,6 @@
   },
   {
     "id": "PF-P16-TV", "eventId": "P16", "type": "tv_news", "stance": "government", "source": { "actorId": "anchor_fox" },
-    "eyebrow": "PRIME TIME 危机结束特别节目", "title": "{{official_terms:last}}", "body": "政府已将最终结果定义为“{{choice:label}}”。被扣船只数：{{state:detained_boats}}；协议类型：{{state:agreement_type}}。本台专家将在不阅读协议附件的前提下，详细说明为何这是胜利。", "footer": "下节节目：《谁先眨眼？》"
+    "eyebrow": "黄金时段·危机结束特别节目", "title": "{{official_terms:last}}", "body": "政府已将最终结果定义为“{{choice:label}}”。目前仍有 {{state:detained_boats}} 艘渔船未返航，双方将依照“{{state:agreement_type}}”处理后续安排。本台专家将在不阅读协议附件的前提下，详细说明为何这是胜利。", "footer": "下节节目：《谁先眨眼？》"
   }
 ]
