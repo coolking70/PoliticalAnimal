@@ -53,6 +53,13 @@ Original prompt: 请参考 Political_Animal_Game_Design_v0.1.md，进行项目�
 - Stage 3.1 最终验证：生产构建、32 项 Vitest 与 11 项内容校验全部通过；两套剧本各 10,000 Seed 的完成性回归保持通过。
 - Stage 3.1 合并前验收修正：历史时间线移除 Event ID；普通政治档案将 Debt pressure/strength 改为定性描述，精确值仅留在 Debug；缺失 Memory 的模板回退文案改为题材无关表述。
 - Stage 3.1 合并前复验：生产构建、32 项 Vitest、11 项内容校验通过；目视确认历史页与政治档案的新文案，试玩状态一致且无新增控制台错误。
+- Stage 4：整理当前真实 JSON 能力为 `docs/AI_AUTHORING_SPEC.md`，并提供单文件 AI Draft JSON Schema；规范覆盖 Condition、Effect、Memory、Debt、Framing、模板与 playerDisplay。
+- 新增 `import-scenario` CLI：只补安全默认值，先在内存调用现有 Content Validator，0 错误后再原子拆分五个正式 JSON；已有目标目录拒绝覆盖。
+- Content Validator 增强 AI 内容保护：非法 ID/operator/effect/debt action、未知引用与模板、未来依赖、开场/ending 结构死路、玩家可见 snake_case 枚举缺失映射。
+- Scenario Registry 改为自动发现完整 `content/*/` 目录，未来导入新剧本不再修改手工 import 列表。
+- 《狐狸共和国能源危机》完全由 `drafts/energy-crisis.ai-draft.json` 经 Importer 生成：8 个事件、4 阶段、5 个 Framing、3 个 ending。
+- Importer 失败安全实测：含未知 actor、未知 state 模板与缺失 ending 的 Draft 一次报告 4 个问题，目标目录未创建；有效 Draft 的标准化结果与正式目录逐字段一致。
+- Stage 4 浏览器验收完成：能源危机 Demo 从开场完整进入 ending，五个事件后 Framing 均可正常阅读并回到调度；结局后无刷新返回三剧本首页，控制台无错误或警告。
 
 ## TODO
 

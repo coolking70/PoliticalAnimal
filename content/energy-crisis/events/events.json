@@ -1,0 +1,529 @@
+[
+  {
+    "id": "EN01",
+    "title": "首都突然停电",
+    "type": "core",
+    "thread": [
+      "Energy",
+      "Government"
+    ],
+    "priority": 200,
+    "phase": "outage",
+    "actorId": "energy_minister",
+    "institutionId": "energy_ministry",
+    "scene": "首都已经停电四小时。电网公司要求燃料，矿区要求合同，电视台要求一间仍有电的演播室。你必须先决定政府准备把什么送进电网。",
+    "choices": [
+      {
+        "id": "A",
+        "label": "紧急进口燃料",
+        "response": "第一艘燃料船尚未靠岸，外交部已经宣布供应链恢复了国际信心。",
+        "effects": [
+          {
+            "field": "energy_policy",
+            "operation": "set",
+            "value": "emergency_imports"
+          },
+          {
+            "field": "reserve_power",
+            "operation": "increment",
+            "value": 2
+          }
+        ],
+        "memories": [
+          {
+            "speaker": "energy_minister",
+            "topic": "energy_promise",
+            "statement": "政府将不惜代价恢复全国供电。",
+            "public": true,
+            "importance": 4,
+            "tags": [
+              "energy",
+              "promise"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "宣布临时电价上限",
+        "response": "电价停止上涨，电力公司则提醒政府，发电成本没有收到同一份命令。",
+        "effects": [
+          {
+            "field": "energy_policy",
+            "operation": "set",
+            "value": "price_cap"
+          },
+          {
+            "field": "public_anger",
+            "operation": "decrement",
+            "value": 1
+          }
+        ],
+        "debts": [
+          {
+            "creditor": "power_utility",
+            "type": "price_compensation",
+            "topic": "utility_support",
+            "strength": 3,
+            "pressure": 2,
+            "description": "电网公司等待政府补偿限价造成的成本。",
+            "tags": [
+              "utility",
+              "budget"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "C",
+        "label": "立即分区限电",
+        "response": "政府公布了有序用电表，所有没有电的地区都开始研究自己为何排在有序之外。",
+        "effects": [
+          {
+            "field": "energy_policy",
+            "operation": "set",
+            "value": "rolling_rationing"
+          },
+          {
+            "field": "public_anger",
+            "operation": "increment",
+            "value": 2
+          },
+          {
+            "field": "official_terms",
+            "operation": "push",
+            "value": "有序用电"
+          }
+        ]
+      }
+    ],
+    "weight": 1,
+    "once": true
+  },
+  {
+    "id": "EN02",
+    "title": "电网公司的求救账单",
+    "type": "reactive",
+    "thread": [
+      "Utility",
+      "Budget"
+    ],
+    "priority": 110,
+    "phase": "response",
+    "actorId": "utility_ceo",
+    "institutionId": "power_utility",
+    "after": [
+      "EN01"
+    ],
+    "debtTopics": [
+      "utility_support"
+    ],
+    "urgencyFields": [
+      "public_anger"
+    ],
+    "scene": "电网总裁带来一份救助清单。第一页写着‘维持国家基本供电’，后九十九页写着这句话的价格。",
+    "choices": [
+      {
+        "id": "A",
+        "label": "提供紧急担保",
+        "response": "电网获得政府信用，政府获得一张未来才会知道金额的账单。",
+        "effects": [
+          {
+            "field": "reserve_power",
+            "operation": "increment",
+            "value": 2
+          }
+        ],
+        "debts": [
+          {
+            "creditor": "power_utility",
+            "type": "bailout_guarantee",
+            "topic": "utility_support",
+            "strength": 4,
+            "pressure": 2,
+            "description": "电网公司等待紧急担保转化为正式救助。",
+            "tags": [
+              "utility",
+              "promise"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "要求公司自行承担",
+        "response": "公司同意自行承担，并立即把‘自行’定义为下一季度用户账单。",
+        "effects": [
+          {
+            "field": "public_anger",
+            "operation": "increment",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "weight": 1,
+    "once": true
+  },
+  {
+    "id": "EN03",
+    "title": "矿工要求能源爱国主义",
+    "type": "reactive",
+    "thread": [
+      "Labor",
+      "Energy"
+    ],
+    "priority": 110,
+    "phase": "response",
+    "actorId": "miner_badger",
+    "institutionId": "coal_union",
+    "after": [
+      "EN01"
+    ],
+    "urgencyFields": [
+      "blackout_hours"
+    ],
+    "scene": "矿工联合会愿意重启封存矿井，条件是政府承认每一份临时岗位都具有永久的国家意义。",
+    "choices": [
+      {
+        "id": "A",
+        "label": "重启两座旧矿井",
+        "response": "矿井恢复生产，环境评估则被安排在危机结束后评估自己是否仍有必要。",
+        "effects": [
+          {
+            "field": "reserve_power",
+            "operation": "increment",
+            "value": 3
+          }
+        ],
+        "debts": [
+          {
+            "creditor": "coal_union",
+            "type": "jobs_commitment",
+            "topic": "miner_jobs",
+            "strength": 3,
+            "pressure": 2,
+            "description": "矿工要求临时复产岗位得到长期保障。",
+            "tags": [
+              "labor",
+              "jobs"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "只接受短期库存",
+        "response": "工会同意提供库存，并把每一车煤都附上一份长期谈判邀请。",
+        "effects": [
+          {
+            "field": "reserve_power",
+            "operation": "increment",
+            "value": 1
+          },
+          {
+            "field": "public_anger",
+            "operation": "increment",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "weight": 1,
+    "once": true
+  },
+  {
+    "id": "EN04",
+    "title": "为停电选择正式名称",
+    "type": "core",
+    "thread": [
+      "Media",
+      "Government"
+    ],
+    "priority": 160,
+    "phase": "settlement",
+    "actorId": "energy_anchor",
+    "institutionId": "national_broadcast",
+    "after": [
+      "EN02",
+      "EN03"
+    ],
+    "memoryTopics": [
+      "energy_promise"
+    ],
+    "scene": "晚间新闻终于恢复播出。主播问这究竟是‘全国停电’，还是一场被公众误解的能源管理成果。",
+    "choices": [
+      {
+        "id": "A",
+        "label": "称为“能源安全调整”",
+        "response": "字幕变短了停电时间，并显著延长了政府解释。",
+        "effects": [
+          {
+            "field": "official_terms",
+            "operation": "push",
+            "value": "能源安全调整"
+          }
+        ],
+        "memories": [
+          {
+            "speaker": "energy_minister",
+            "topic": "official_energy_wording",
+            "statement": "共和国正在进行能源安全调整。",
+            "public": true,
+            "importance": 4,
+            "tags": [
+              "media",
+              "wording"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "承认是“全国供电危机”",
+        "response": "公众欢迎诚实，市场则要求政府解释诚实是否会持续。",
+        "effects": [
+          {
+            "field": "official_terms",
+            "operation": "push",
+            "value": "全国供电危机"
+          },
+          {
+            "field": "public_anger",
+            "operation": "decrement",
+            "value": 1
+          }
+        ],
+        "memories": [
+          {
+            "speaker": "energy_minister",
+            "topic": "official_energy_wording",
+            "statement": "共和国正面对一场全国供电危机。",
+            "public": true,
+            "importance": 5,
+            "tags": [
+              "media",
+              "honesty"
+            ]
+          }
+        ]
+      }
+    ],
+    "weight": 1,
+    "once": true
+  },
+  {
+    "id": "EN05",
+    "title": "黎明前的能源协议",
+    "type": "debt",
+    "thread": [
+      "Settlement",
+      "Debt"
+    ],
+    "priority": 180,
+    "phase": "settlement",
+    "actorId": "energy_minister",
+    "institutionId": "energy_ministry",
+    "after": [
+      "EN04"
+    ],
+    "debtTopics": [
+      "utility_support",
+      "miner_jobs"
+    ],
+    "urgencyFields": [
+      "public_anger",
+      "blackout_hours"
+    ],
+    "scene": "电网公司、矿工和财政部都带来了最终方案。每份方案都能恢复供电，区别只在于未来由谁坚持这不是自己的成本。",
+    "choices": [
+      {
+        "id": "A",
+        "label": "签署共同负担协议",
+        "response": "三方共同承担成本，并各自发布图表证明自己的份额最小。",
+        "effects": [
+          {
+            "field": "grid_stable",
+            "operation": "set",
+            "value": true
+          },
+          {
+            "field": "final_outcome",
+            "operation": "set",
+            "value": "shared_burden"
+          }
+        ],
+        "debtActions": [
+          {
+            "action": "resolve",
+            "topic": "utility_support"
+          },
+          {
+            "action": "resolve",
+            "topic": "miner_jobs"
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "优先救助国家电网",
+        "response": "灯亮了，账单也亮了；政府宣布两者都是恢复信心的信号。",
+        "effects": [
+          {
+            "field": "grid_stable",
+            "operation": "set",
+            "value": true
+          },
+          {
+            "field": "final_outcome",
+            "operation": "set",
+            "value": "corporate_rescue"
+          }
+        ],
+        "debtActions": [
+          {
+            "action": "resolve",
+            "topic": "utility_support"
+          },
+          {
+            "action": "break",
+            "topic": "miner_jobs"
+          }
+        ]
+      },
+      {
+        "id": "C",
+        "label": "以全民节能结束短缺",
+        "response": "电网在需求下降后恢复稳定，政府随即感谢公众自愿服从停电。",
+        "effects": [
+          {
+            "field": "grid_stable",
+            "operation": "set",
+            "value": true
+          },
+          {
+            "field": "final_outcome",
+            "operation": "set",
+            "value": "austere_recovery"
+          },
+          {
+            "field": "public_anger",
+            "operation": "increment",
+            "value": 2
+          }
+        ],
+        "debtActions": [
+          {
+            "action": "break",
+            "topic": "utility_support"
+          },
+          {
+            "action": "break",
+            "topic": "miner_jobs"
+          }
+        ]
+      }
+    ],
+    "weight": 1,
+    "once": true
+  },
+  {
+    "id": "EN06",
+    "title": "共同承担的光明",
+    "type": "ending",
+    "thread": [
+      "History"
+    ],
+    "priority": 200,
+    "phase": "ending",
+    "actorId": "energy_historian",
+    "institutionId": "energy_archives",
+    "after": [
+      "EN05"
+    ],
+    "requirements": [
+      {
+        "field": "final_outcome",
+        "operator": "==",
+        "value": "shared_burden"
+      }
+    ],
+    "scene": "{{history:evaluation}} 首都重新亮灯时，每个机构都站在最明亮的位置宣布自己承担了最黑暗的部分。",
+    "choices": [
+      {
+        "id": "A",
+        "label": "接受历史评价",
+        "response": "能源档案正式归档。",
+        "effects": []
+      }
+    ],
+    "weight": 1,
+    "once": true
+  },
+  {
+    "id": "EN07",
+    "title": "被救助的市场",
+    "type": "ending",
+    "thread": [
+      "History"
+    ],
+    "priority": 200,
+    "phase": "ending",
+    "actorId": "energy_historian",
+    "institutionId": "energy_archives",
+    "after": [
+      "EN05"
+    ],
+    "requirements": [
+      {
+        "field": "final_outcome",
+        "operator": "==",
+        "value": "corporate_rescue"
+      }
+    ],
+    "scene": "{{history:evaluation}} 电网公司的年度报告把政府救助列入‘市场自主恢复’章节。",
+    "choices": [
+      {
+        "id": "A",
+        "label": "接受历史评价",
+        "response": "能源档案正式归档。",
+        "effects": []
+      }
+    ],
+    "weight": 1,
+    "once": true
+  },
+  {
+    "id": "EN08",
+    "title": "少用一点的胜利",
+    "type": "ending",
+    "thread": [
+      "History"
+    ],
+    "priority": 200,
+    "phase": "ending",
+    "actorId": "energy_historian",
+    "institutionId": "energy_archives",
+    "after": [
+      "EN05"
+    ],
+    "requirements": [
+      {
+        "field": "final_outcome",
+        "operator": "==",
+        "value": "austere_recovery"
+      }
+    ],
+    "scene": "{{history:evaluation}} 纪念馆最后一个展厅没有开灯，以便参观者亲身理解政策。",
+    "choices": [
+      {
+        "id": "A",
+        "label": "接受历史评价",
+        "response": "能源档案正式归档。",
+        "effects": []
+      }
+    ],
+    "weight": 1,
+    "once": true
+  }
+]

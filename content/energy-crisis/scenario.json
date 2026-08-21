@@ -1,0 +1,97 @@
+{
+  "id": "energy_crisis",
+  "title": "狐狸共和国能源危机",
+  "playerRole": "狐狸共和国能源部长",
+  "workspaceLabel": "能源应急指挥部",
+  "opening": "首都在晚间新闻开场前陷入停电。电网公司说缺的是燃料，矿工说缺的是尊重，财政部说最缺的是一个不需要拨款的解释。总统要求你在天亮前恢复供电，或至少恢复政府对供电的定义。",
+  "phases": [
+    {
+      "id": "outage",
+      "label": "全国停电"
+    },
+    {
+      "id": "response",
+      "label": "紧急调度"
+    },
+    {
+      "id": "settlement",
+      "label": "能源协议"
+    },
+    {
+      "id": "ending",
+      "label": "危机后来史"
+    }
+  ],
+  "historyEvaluations": [
+    {
+      "requirements": [
+        {
+          "field": "final_outcome",
+          "operator": "==",
+          "value": "shared_burden"
+        }
+      ],
+      "text": "五年后的能源白皮书写道：政府让电力公司、矿工和公众共同承担成本，并让每一方都相信主要由另外两方承担。"
+    },
+    {
+      "requirements": [
+        {
+          "field": "final_outcome",
+          "operator": "==",
+          "value": "corporate_rescue"
+        }
+      ],
+      "text": "五年后的审计报告写道：共和国成功挽救了电网，随后用十年电费证明救助从未由纳税人承担。"
+    },
+    {
+      "requirements": [
+        {
+          "field": "final_outcome",
+          "operator": "==",
+          "value": "austere_recovery"
+        }
+      ],
+      "text": "五年后的纪念展写道：公众通过少用电战胜了缺电，政府则通过把短缺改名为节约战胜了公众。"
+    },
+    {
+      "text": "能源危机最终被归档为一次持续时间短于调查委员会的临时事件。"
+    }
+  ],
+  "playerDisplay": {
+    "fields": {
+      "energy_policy": {
+        "emergency_imports": "紧急进口燃料",
+        "price_cap": "临时电价上限",
+        "rolling_rationing": "分区有序用电",
+        "undecided": "尚未决定"
+      },
+      "final_outcome": {
+        "shared_burden": "共同负担协议",
+        "corporate_rescue": "电网救助方案",
+        "austere_recovery": "全民节能复苏",
+        "unset": "尚未定案"
+      }
+    }
+  },
+  "stateSchema": {
+    "phase": "string",
+    "blackout_hours": "number",
+    "public_anger": "number",
+    "reserve_power": "number",
+    "energy_policy": "string",
+    "official_terms": "string[]",
+    "grid_stable": "boolean",
+    "final_outcome": "string"
+  },
+  "initialState": {
+    "phase": "outage",
+    "blackout_hours": 4,
+    "public_anger": 1,
+    "reserve_power": 0,
+    "energy_policy": "undecided",
+    "official_terms": [],
+    "grid_stable": false,
+    "final_outcome": "unset"
+  },
+  "subtitle": "AI 内容管线试作"
+}

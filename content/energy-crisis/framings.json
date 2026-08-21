@@ -1,0 +1,67 @@
+[
+  {
+    "id": "EF-EN01-PRESS",
+    "eventId": "EN01",
+    "type": "newspaper",
+    "stance": "media",
+    "source": {
+      "institutionId": "national_broadcast"
+    },
+    "eyebrow": "能源·号外",
+    "title": "政府选定第一套供电方案",
+    "body": "能源部决定“{{choice:label}}”。按照部长的新方案，共和国当前采用{{state:energy_policy}}。专家提醒，方案名称已经有电，输电线路仍在等待。",
+    "footer": "本报电子版将在供电恢复后同步更新。"
+  },
+  {
+    "id": "EF-EN02-MEMO",
+    "eventId": "EN02",
+    "type": "internal_memo",
+    "stance": "institution",
+    "source": {
+      "institutionId": "power_utility"
+    },
+    "eyebrow": "电网公司内部财务提示",
+    "title": "关于政府支持可兑现性的说明",
+    "body": "能源部选择“{{choice:label}}”。公司对政府支持的账面判断为{{debt:utility_support:status}}；请各部门在灯亮前避免使用‘盈利’一词。",
+    "footer": "传阅范围：能看懂电费附加项的管理人员。"
+  },
+  {
+    "id": "EF-EN03-TV",
+    "eventId": "EN03",
+    "type": "tv_news",
+    "stance": "institution",
+    "source": {
+      "actorId": "miner_badger"
+    },
+    "eyebrow": "矿区连线",
+    "title": "矿工愿为共和国点灯，并要求共和国记住是谁点的",
+    "body": "联合会确认政府选择“{{choice:label}}”。矿区已开始行动，长期岗位的期限将在危机不再紧急之后继续紧急讨论。",
+    "footer": "现场照明由应急发电机提供。"
+  },
+  {
+    "id": "EF-EN04-GOV",
+    "eventId": "EN04",
+    "type": "government_memo",
+    "stance": "government",
+    "source": {
+      "institutionId": "energy_ministry"
+    },
+    "eyebrow": "能源部统一口径",
+    "title": "今后统一使用“{{official_terms:last}}”",
+    "body": "各部门应使用“{{official_terms:last}}”描述本次事件。任何尚未恢复的供电，均属于该口径仍在实施的证据。",
+    "footer": "本通知自通电时生效，停电期间同样有效。"
+  },
+  {
+    "id": "EF-EN05-PRESS",
+    "eventId": "EN05",
+    "type": "newspaper",
+    "stance": "foreign_observer",
+    "source": {
+      "label": "《海外候鸟能源观察》"
+    },
+    "eyebrow": "国际观察",
+    "title": "狐狸共和国恢复供电，各方开始争夺开关",
+    "body": "政府最终选择“{{choice:label}}”。首都灯光恢复后，电网、矿区和内阁分别宣布自己是唯一没有转移成本的一方。",
+    "footer": "本报驻首都记者已停止借用酒店应急插座。"
+  }
+]
