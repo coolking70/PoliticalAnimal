@@ -160,6 +160,7 @@ describe('scenario runtime', () => {
     expect(formatPlayerValue('mutual_withdrawal', penguin, 'agreement_type')).toBe('双方同步撤离');
     const save = { ...createGame(4, 'penguin_strait'), worldState: { ...penguin.initialState, agreement_type: 'mutual_withdrawal' } };
     expect(renderNarrativeTemplate('安排如下：{{state:agreement_type}}。', save, undefined, penguin)).toBe('安排如下：双方同步撤离。');
+    expect(renderNarrativeTemplate('旧话：{{memory:missing_topic}}。', save, undefined, penguin)).toBe('旧话：没有可供引用的相关记录。');
   });
 
   it('same seed and choices produce exactly the same completed save', () => {

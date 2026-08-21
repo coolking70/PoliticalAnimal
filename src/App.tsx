@@ -43,6 +43,19 @@ const eventTypeLabels = {
   ending: '历史终章',
 } as const;
 
+function describeDebtWeight(strength: number): string {
+  if (strength >= 4) return '分量沉重';
+  if (strength >= 2) return '分量显著';
+  return '分量有限';
+}
+
+function describeDebtPressure(pressure: number, cap: number): string {
+  const ratio = cap > 0 ? pressure / cap : 0;
+  if (ratio >= 0.75) return '兑现压力迫切';
+  if (ratio >= 0.4) return '兑现压力正在累积';
+  return '兑现压力暂时有限';
+}
+
 function FramingView({ framing, seenCount, pendingCount, onDismiss }: {
   framing: ResolvedNarrativeFraming;
   seenCount: number;
@@ -324,14 +337,14 @@ export default function App() {
               {tab === 'history' && (
                 <div className="page-view"><p className="eyebrow gold">共和国官方时间线</p><h2>你做过的决定</h2>
                   {!game.history.length ? <p className="empty">历史还没有来得及误解你。</p> :
-                    <ol className="timeline">{[...game.history].reverse().map((entry) => <li key={`${entry.turn}-${entry.eventId}`}><span>第 {entry.turn} 回合 · {entry.eventId}</span><h3>{entry.title}</h3><p>{entry.choiceLabel}</p><small>{entry.response}</small></li>)}</ol>}
+                    <ol className="timeline">{[...game.history].reverse().map((entry) => <li key={`${entry.turn}-${entry.eventId}`}><span>第 {entry.turn} 回合</span><h3>{entry.title}</h3><p>{entry.choiceLabel}</p><small>{entry.response}</small></li>)}</ol>}
                 </div>
               )}
               {tab === 'archive' && (
                 <div className="page-view archive-view"><p className="eyebrow gold">POLITICAL ARCHIVE</p><h2>政治档案</h2>
                   <div className="archive-summary"><article><span>政治记忆</span><strong>{game.memories.length}</strong></article><article><span>未结债务</span><strong>{game.debts.filter((debt) => debt.status === 'active').length}</strong></article><article><span>官方措辞</span><strong>{Array.isArray(game.worldState.official_terms) ? game.worldState.official_terms.length : 0}</strong></article></div>
                   <section className="archive-section"><h3>公开讲话与承诺</h3>{!game.memories.length ? <p className="empty">政府尚未留下可供未来引用的话。</p> : <div className="record-list">{[...game.memories].reverse().map((memory) => <article key={memory.id}><div><span>第 {memory.createdAtTurn} 回合留下</span><b>{entityName(memory.speaker)}</b></div><blockquote>“{memory.statement}”</blockquote><small>{memory.public ? '公开表态' : '内部记录'} · {memory.active ? '仍可被引用' : '已经失效'}</small></article>)}</div>}</section>
-                  <section className="archive-section"><h3>政治债务</h3>{!game.debts.length ? <p className="empty">目前没有机构承认政府欠了它什么。</p> : <div className="record-list debt-list">{[...game.debts].reverse().map((debt) => <article key={debt.id} className={`debt-${debt.status}`}><div><span>{(Array.isArray(debt.creditor) ? debt.creditor : [debt.creditor]).map(entityName).join('、')}</span><b>{formatPlayerValue(debt.status, activeScenario, 'debt.status')}</b></div><p>{debt.description}</p><small>政治压力 {debt.pressure}/{getDebtPressureCap(debt)} · 影响程度 {debt.strength}</small></article>)}</div>}</section>
+                  <section className="archive-section"><h3>政治债务</h3>{!game.debts.length ? <p className="empty">目前没有机构承认政府欠了它什么。</p> : <div className="record-list debt-list">{[...game.debts].reverse().map((debt) => <article key={debt.id} className={`debt-${debt.status}`}><div><span>{(Array.isArray(debt.creditor) ? debt.creditor : [debt.creditor]).map(entityName).join('、')}</span><b>{formatPlayerValue(debt.status, activeScenario, 'debt.status')}</b></div><p>{debt.description}</p><small>{describeDebtWeight(debt.strength)} · {describeDebtPressure(debt.pressure, getDebtPressureCap(debt))}</small></article>)}</div>}</section>
                 </div>
               )}
               {tab === 'settings' && (

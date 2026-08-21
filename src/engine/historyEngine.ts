@@ -34,7 +34,7 @@ export function renderNarrativeTemplate(template: string, save: GameSave, choice
     .replace('{{history:evaluation}}', generateHistoricalEvaluation(save, scenario))
     .replace(/\{\{memory:([^}:]+)(?::([^}]+))?\}\}/g, (_, topic: string, field?: string) => {
       const memory = findMemory(save.memories, topic);
-      if (!memory) return field ? '无记录' : '政府始终尊重独立思考';
+      if (!memory) return field ? '无记录' : '没有可供引用的相关记录';
       const resolvedField = field ?? 'statement';
       return formatPlayerValue(memory[resolvedField as keyof typeof memory], scenario, `memory.${resolvedField}`);
     })
