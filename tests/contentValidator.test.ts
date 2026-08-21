@@ -3,6 +3,8 @@ import { choose, createGame, getCurrentEvent } from '../src/store/gameStore';
 import { defaultScenarioId, getScenarioBundle, listScenarioIds } from '../src/content/scenarioRegistry';
 import { validateScenarioBundle } from '../src/content/contentValidator';
 import { formatPlayerValue } from '../src/engine/historyEngine';
+import { normalizeAiDraft } from '../src/content/aiDraft';
+import energyDraft from '../drafts/energy-crisis.ai-draft.json';
 
 describe('education demo content', () => {
   it('passes actor, institution, framing, state, dependency, and ending validation for every registered scenario', () => {
@@ -126,5 +128,43 @@ describe('penguin strait content', () => {
         }
       }
     }
+  });
+});
+
+describe('AI content pipeline', () => {
+  it('normalizes the single-file energy draft into the exact imported bundle', () => {
+    const normalized = normalizeAiDraft(energyDraft);
+    expect(normalized.contentDirectory).toBe('energy-crisis');
+    expect(normalized.bundle).toEqual(getScenarioBundle('energy_crisis'));
+    expect(normalized.bundle.scenario.subtitle).toBe('AI 内容管线试作');
+    expect(normalized.bundle.events[0]).toMatchObject({ weight: 1, once: true });
+  });
+
+  it('imports a small playable scenario with three formal endings', () => {
+    const bundle = getScenarioBundle('energy_crisis');
+    expect(bundle.events).toHaveLength(8);
+    expect(bundle.framings).toHaveLength(5);
+    expect(bundle.events.filter((event) => event.type === 'ending')).toHaveLength(3);
+  });
+
+  it('reports AI-style reference, template, phase, ending, and display mapping mistakes together', () => {
+    const broken = structuredClone(getScenarioBundle('energy_crisis'));
+    broken.actors.push(structuredClone(broken.actors[0]));
+    broken.events[0].actorId = 'invented_actor';
+    broken.events[1].after = ['EN04'];
+    broken.framings[0].body = '{{state:energy_policy}} and {{state:missing_field}} and {{memory:unfinished';
+    delete broken.scenario.playerDisplay!.fields!.energy_policy.emergency_imports;
+    for (const event of broken.events) if (event.type === 'ending') event.type = 'core';
+    const codes = validateScenarioBundle(broken).map((issue) => issue.code);
+    expect(codes).toEqual(expect.arrayContaining([
+      'duplicate_actor',
+      'unknown_actor',
+      'future_phase_reference',
+      'unknown_framing_state_field',
+      'malformed_template_variable',
+      'missing_player_display_mapping',
+      'missing_ending',
+      'unreachable_ending_phase',
+    ]));
   });
 });

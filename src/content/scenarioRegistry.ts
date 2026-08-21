@@ -1,37 +1,42 @@
-import scenarioJson from '../../content/education-demo/scenario.json';
-import actorsJson from '../../content/education-demo/actors.json';
-import institutionsJson from '../../content/education-demo/institutions.json';
-import eventsJson from '../../content/education-demo/events/events.json';
-import framingsJson from '../../content/education-demo/framings.json';
-import penguinScenarioJson from '../../content/penguin-strait/scenario.json';
-import penguinActorsJson from '../../content/penguin-strait/actors.json';
-import penguinInstitutionsJson from '../../content/penguin-strait/institutions.json';
-import penguinEventsJson from '../../content/penguin-strait/events/events.json';
-import penguinFramingsJson from '../../content/penguin-strait/framings.json';
-import type { ScenarioBundle } from '../models/game';
+import type { Actor, GameEvent, Institution, NarrativeFraming, Scenario, ScenarioBundle } from '../models/game';
 
-const educationDemo = {
-  scenario: scenarioJson,
-  actors: actorsJson,
-  institutions: institutionsJson,
-  events: eventsJson,
-  framings: framingsJson,
-} as ScenarioBundle;
+type JsonModule<T> = { default: T };
 
-const penguinStrait = {
-  scenario: penguinScenarioJson,
-  actors: penguinActorsJson,
-  institutions: penguinInstitutionsJson,
-  events: penguinEventsJson,
-  framings: penguinFramingsJson,
-} as ScenarioBundle;
+const scenarioModules = import.meta.glob('../../content/*/scenario.json', { eager: true }) as Record<string, JsonModule<Scenario>>;
+const actorModules = import.meta.glob('../../content/*/actors.json', { eager: true }) as Record<string, JsonModule<Actor[]>>;
+const institutionModules = import.meta.glob('../../content/*/institutions.json', { eager: true }) as Record<string, JsonModule<Institution[]>>;
+const eventModules = import.meta.glob('../../content/*/events/events.json', { eager: true }) as Record<string, JsonModule<GameEvent[]>>;
+const framingModules = import.meta.glob('../../content/*/framings.json', { eager: true }) as Record<string, JsonModule<NarrativeFraming[]>>;
 
-const registry: Record<string, ScenarioBundle> = {
-  [educationDemo.scenario.id]: educationDemo,
-  [penguinStrait.scenario.id]: penguinStrait,
-};
+function directoryFromScenarioPath(modulePath: string): string {
+  const match = modulePath.match(/\/content\/([^/]+)\/scenario\.json$/);
+  if (!match) throw new Error(`无法识别 Scenario 内容目录：${modulePath}`);
+  return match[1];
+}
 
-export const defaultScenarioId = educationDemo.scenario.id;
+function requiredModule<T>(modules: Record<string, JsonModule<T>>, modulePath: string): T {
+  const module = modules[modulePath];
+  if (!module) throw new Error(`Scenario 内容目录缺少文件：${modulePath}`);
+  return module.default;
+}
+
+const registry: Record<string, ScenarioBundle> = {};
+for (const [scenarioPath, scenarioModule] of Object.entries(scenarioModules)) {
+  const directory = directoryFromScenarioPath(scenarioPath);
+  const root = `../../content/${directory}`;
+  const bundle: ScenarioBundle = {
+    scenario: scenarioModule.default,
+    actors: requiredModule(actorModules, `${root}/actors.json`),
+    institutions: requiredModule(institutionModules, `${root}/institutions.json`),
+    events: requiredModule(eventModules, `${root}/events/events.json`),
+    framings: requiredModule(framingModules, `${root}/framings.json`),
+  };
+  if (registry[bundle.scenario.id]) throw new Error(`重复注册 Scenario：${bundle.scenario.id}`);
+  registry[bundle.scenario.id] = bundle;
+}
+
+export const defaultScenarioId = 'education_demo';
+if (!registry[defaultScenarioId]) throw new Error(`默认 Scenario 未注册：${defaultScenarioId}`);
 
 export function getScenarioBundle(scenarioId: string): ScenarioBundle {
   const bundle = registry[scenarioId];

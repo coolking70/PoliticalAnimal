@@ -1,0 +1,42 @@
+[
+  {
+    "id": "energy_minister",
+    "name": "能源部长阁下",
+    "species": "fox",
+    "emoji": "🦊",
+    "role": "玩家·能源部长",
+    "institutionId": "energy_ministry"
+  },
+  {
+    "id": "utility_ceo",
+    "name": "格里德·长尾",
+    "species": "squirrel",
+    "emoji": "🐿️",
+    "role": "国家电网公司总裁",
+    "institutionId": "power_utility"
+  },
+  {
+    "id": "miner_badger",
+    "name": "布鲁诺·黑爪",
+    "species": "badger",
+    "emoji": "🦡",
+    "role": "全国矿工联合会主席",
+    "institutionId": "coal_union"
+  },
+  {
+    "id": "energy_anchor",
+    "name": "共和国晚间能源新闻",
+    "species": "owl",
+    "emoji": "📺",
+    "role": "特别节目主播",
+    "institutionId": "national_broadcast"
+  },
+  {
+    "id": "energy_historian",
+    "name": "共和国能源档案编审组",
+    "species": "owl",
+    "emoji": "📖",
+    "role": "官方历史编纂者",
+    "institutionId": "energy_archives"
+  }
+]

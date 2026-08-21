@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://political-animal.local/schemas/ai-draft.schema.json",
+  "title": "Political Animal AI Scenario Draft",
+  "type": "object",
+  "required": ["draftVersion", "scenario", "actors", "institutions", "events"],
+  "properties": {
+    "draftVersion": { "const": 1 },
+    "contentDirectory": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "scenario": {
+      "type": "object",
+      "required": ["id", "title", "playerRole", "workspaceLabel", "opening", "phases", "stateSchema", "initialState"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/nonEmptyString" },
+        "subtitle": { "$ref": "#/$defs/nonEmptyString" },
+        "playerRole": { "$ref": "#/$defs/nonEmptyString" },
+        "workspaceLabel": { "$ref": "#/$defs/nonEmptyString" },
+        "opening": { "$ref": "#/$defs/nonEmptyString" },
+        "phases": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["id", "label"] } },
+        "stateSchema": { "type": "object", "additionalProperties": { "enum": ["number", "boolean", "string", "string[]"] } },
+        "initialState": { "type": "object" },
+        "historyEvaluations": { "type": "array" },
+        "playerDisplay": { "type": "object" }
+      }
+    },
+    "actors": { "type": "array", "items": { "$ref": "#/$defs/actor" } },
+    "institutions": { "type": "array", "items": { "$ref": "#/$defs/institution" } },
+    "events": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/event" } },
+    "framings": { "type": "array", "items": { "$ref": "#/$defs/framing" } }
+  },
+  "$defs": {
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "id": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]*$" },
+    "actor": { "type": "object", "required": ["id", "name"], "properties": { "id": { "$ref": "#/$defs/id" }, "name": { "$ref": "#/$defs/nonEmptyString" } } },
+    "institution": { "type": "object", "required": ["id", "name"], "properties": { "id": { "$ref": "#/$defs/id" }, "name": { "$ref": "#/$defs/nonEmptyString" } } },
+    "choice": { "type": "object", "required": ["id", "label", "response"], "properties": { "id": { "$ref": "#/$defs/id" }, "label": { "$ref": "#/$defs/nonEmptyString" }, "response": { "$ref": "#/$defs/nonEmptyString" }, "effects": { "type": "array" } } },
+    "event": {
+      "type": "object",
+      "required": ["id", "title", "phase", "actorId", "institutionId", "scene", "choices"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/nonEmptyString" },
+        "type": { "enum": ["core", "reactive", "ambient", "debt", "ending"] },
+        "phase": { "$ref": "#/$defs/id" },
+        "actorId": { "$ref": "#/$defs/id" },
+        "institutionId": { "$ref": "#/$defs/id" },
+        "scene": { "$ref": "#/$defs/nonEmptyString" },
+        "choices": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/choice" } }
+      }
+    },
+    "framing": {
+      "type": "object",
+      "required": ["id", "eventId", "type", "stance", "source", "title", "body"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "eventId": { "$ref": "#/$defs/id" },
+        "type": { "enum": ["newspaper", "tv_news", "government_memo", "internal_memo"] },
+        "stance": { "enum": ["government", "media", "opposition", "institution", "foreign_observer"] },
+        "source": { "type": "object" },
+        "title": { "$ref": "#/$defs/nonEmptyString" },
+        "body": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    }
+  }
+}

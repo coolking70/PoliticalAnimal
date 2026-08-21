@@ -1,0 +1,32 @@
+[
+  {
+    "id": "energy_ministry",
+    "name": "能源部",
+    "mission": "让共和国在需要时拥有能源",
+    "institutional_interest": "证明每次短缺都在计划之内"
+  },
+  {
+    "id": "power_utility",
+    "name": "国家电网公司",
+    "mission": "输送电力并解释账单",
+    "institutional_interest": "获得救助同时维持市场化形象"
+  },
+  {
+    "id": "coal_union",
+    "name": "全国矿工联合会",
+    "mission": "维护矿区就业与谈判权",
+    "institutional_interest": "把能源安全转化为长期岗位"
+  },
+  {
+    "id": "national_broadcast",
+    "name": "共和国国家广播网",
+    "mission": "在恢复电力后解释停电",
+    "institutional_interest": "让危机拥有可播出的官方名称"
+  },
+  {
+    "id": "energy_archives",
+    "name": "国家能源档案委员会",
+    "mission": "整理每一次临时能源安排",
+    "institutional_interest": "把应急决定编成长期战略"
+  }
+]

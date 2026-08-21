@@ -146,7 +146,7 @@ describe('scenario runtime', () => {
   }
 
   it('loads scenarios through the registry without hard-coded save ids', () => {
-    expect(listScenarioIds()).toEqual(['education_demo', 'penguin_strait']);
+    expect(listScenarioIds()).toEqual(['education_demo', 'energy_crisis', 'penguin_strait']);
     const game = createGame(1, defaultScenarioId);
     expect(game.scenarioId).toBe(defaultScenarioId);
   });
