@@ -68,6 +68,11 @@ Original prompt: 请参考 Political_Animal_Game_Design_v0.1.md，进行项目�
 - Stage 5 第一轮回归：生产构建、41 项 Vitest、14 项内容校验通过；三个现有剧本各 10,000 Seed 完成性测试保持通过。
 - Playwright 检查三剧本选择首页与教育剧本首事件，截图和 `render_game_to_text` 一致，未发现新增控制台错误。
 - Stage 5 最终复验：Stage 4 Importer 在临时目录成功拆分能源 Draft；生产构建、41 项测试、14 项内容校验与差异检查再次通过，仓库未发现真实 API 密钥。
+- Agnes 真实 API 兼容性测试：`agnes-2.5-flash` 可完成 JSON Schema Planner 但 Structure 超过 180 秒；`agnes-2.5-pro` 明确拒绝 JSON Schema、接受 JSON Object，因此 Provider 增加仅针对 Chat HTTP 400/422 的单次协议降级，Schema 同步放入提示且最终仍由本地 Validator 把关。
+- Agnes Pro 首次降级测试没有返回最终 content，Provider 因此补充可配置输出预算：默认 16384，Chat / Responses 分别映射到 `max_tokens` / `max_output_tokens`，并在缺失 content 时仅报告 finish reason 与响应字段名。
+- Agnes Flash 在延长上限后返回了非合法 JSON，Provider 将同一单次 JSON Object 降级扩展到“HTTP 200 但输出不可解析”的 Chat 情况；Responses 不降级且所有路径最多重试一次。
+- Agnes `2.5-flash` 最终完成 Planner / Structure / Content / Critic 与三次 Repair，生成 8 Event / 5 Framing Draft；问题数 88 → 82 → 82 → 5，失败 Draft 与报告落在被忽略的 `drafts/generated/`，密钥扫描通过且未创建正式 content。剩余来源与归属错误不适合自动猜测，安全失败符合预期。
+- Agnes `2.5-pro` 可通过 JSON Object 降级完成前三阶段，但 Critic 被服务端以余额不足拒绝；该密钥下 Pro 通道并非实际不限量，因此未继续消耗额度。
 
 ## TODO
 

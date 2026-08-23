@@ -95,6 +95,7 @@ describe('OpenAI-compatible provider', () => {
       POLITICAL_ANIMAL_LLM_MODEL: 'fixture-model',
     });
     expect(config).toMatchObject({ apiUrl: 'https://example.test/v1/chat/completions', apiKey: 'test-secret', model: 'fixture-model' });
+    expect(config.maxOutputTokens).toBe(16_384);
     expect(() => readOpenAiCompatibleConfig({})).toThrow('POLITICAL_ANIMAL_LLM_API_URL');
   });
 
@@ -120,6 +121,7 @@ describe('OpenAI-compatible provider', () => {
     const body = JSON.parse(request.body as string);
     expect((request.headers as Record<string, string>).Authorization).toBe('Bearer test-secret');
     expect(body.response_format.json_schema).toMatchObject({ name: 'fixture_schema', schema: { type: 'object' } });
+    expect(body.max_tokens).toBe(16_384);
   });
 
   it('also supports OpenAI-compatible Responses endpoints', async () => {
@@ -139,6 +141,56 @@ describe('OpenAI-compatible provider', () => {
     expect(output.ok).toBe(true);
     const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
     expect(body.text.format.type).toBe('json_schema');
+    expect(body.max_output_tokens).toBe(16_384);
     expect(body.store).toBe(false);
+  });
+
+  it('falls back to JSON Object mode when a compatible chat endpoint rejects JSON Schema', async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => {
+      if (fetchMock.mock.calls.length === 1) return new Response('{"error":"unsupported response format"}', { status: 400 });
+      return new Response(JSON.stringify({ choices: [{ message: { content: '{"ok":true}' } }] }), { status: 200 });
+    });
+    const provider = new OpenAiCompatibleProvider({
+      apiUrl: 'https://example.test/v1/chat/completions',
+      apiKey: 'test-secret',
+      model: 'fixture-model',
+    }, fetchMock as unknown as typeof fetch);
+    const output = await provider.generateJson<{ ok: boolean }>({
+      stage: 'planner',
+      schemaName: 'fixture_schema',
+      schema: { type: 'object', required: ['ok'], properties: { ok: { type: 'boolean' } } },
+      systemPrompt: 'system',
+      userPrompt: 'user',
+    });
+
+    expect(output).toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const fallbackBody = JSON.parse((fetchMock.mock.calls[1][1] as RequestInit).body as string);
+    expect(fallbackBody.response_format).toEqual({ type: 'json_object' });
+    expect(fallbackBody.messages[1].content).toContain('"required":["ok"]');
+  });
+
+  it('retries malformed schema output once in JSON Object mode', async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => {
+      const content = fetchMock.mock.calls.length === 1 ? '{"ok":' : '{"ok":true}';
+      return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 });
+    });
+    const provider = new OpenAiCompatibleProvider({
+      apiUrl: 'https://example.test/v1/chat/completions',
+      apiKey: 'test-secret',
+      model: 'fixture-model',
+    }, fetchMock as unknown as typeof fetch);
+    const output = await provider.generateJson<{ ok: boolean }>({
+      stage: 'structure',
+      schemaName: 'fixture_schema',
+      schema: { type: 'object', required: ['ok'], properties: { ok: { type: 'boolean' } } },
+      systemPrompt: 'system',
+      userPrompt: 'user',
+    });
+
+    expect(output).toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const retryBody = JSON.parse((fetchMock.mock.calls[1][1] as RequestInit).body as string);
+    expect(retryBody.response_format).toEqual({ type: 'json_object' });
   });
 });

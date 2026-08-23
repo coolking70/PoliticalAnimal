@@ -33,7 +33,7 @@
 - Importer 在任何格式或校验错误时先终止，不写入不完整的正式内容，也拒绝覆盖已有 Scenario
 - Content Validator 增强 AI 防护：非法 ID/operator/effect/template、未知引用、未来依赖、开场与 ending 结构死路、玩家枚举缺失映射
 - “狐狸共和国能源危机”通过 `drafts/energy-crisis.ai-draft.json` 实际导入：8 个事件、4 个阶段、5 个 Framing、3 个结局
-- 独立 OpenAI-compatible Provider；API URL、Key、Model 与 timeout 全部通过环境变量配置
+- 独立 OpenAI-compatible Provider；API URL、Key、Model、timeout 与输出 token 上限全部通过环境变量配置，Chat endpoint 可从 JSON Schema 安全降级到 JSON Object
 - Planner → Structure → Content → Critic 四阶段结构化 JSON 生成，后一阶段显式读取前一阶段结果
 - Validator 失败后最多 3 次 LLM Repair；逐轮保留错误与修复记录，失败 Draft 不进入正式内容
 - `generate-scenario` CLI 可只保存 Draft，也可继续调用现有 Importer；模型没有源码或文件修改能力

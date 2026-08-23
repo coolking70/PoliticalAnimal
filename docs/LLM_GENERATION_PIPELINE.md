@@ -13,11 +13,14 @@ export POLITICAL_ANIMAL_LLM_MODEL="your-model"
 
 # 可选，默认 120000 ms
 export POLITICAL_ANIMAL_LLM_TIMEOUT_MS="120000"
+
+# 可选，默认 16384；Chat 映射为 max_tokens，Responses 映射为 max_output_tokens
+export POLITICAL_ANIMAL_LLM_MAX_OUTPUT_TOKENS="16384"
 ```
 
 - `API_URL` 必须是完整、无内嵌账号密码的 HTTP(S) endpoint。
 - URL 路径以 `/responses` 结尾时使用 Responses 请求/响应包；其他 URL 使用 OpenAI-compatible Chat Completions 请求/响应包。
-- 两种模式都发送 JSON Schema response format。具体模型必须支持兼容的结构化输出。
+- 两种模式优先发送 JSON Schema response format。若 Chat Completions endpoint 明确以 HTTP 400/422 拒绝该格式，或 200 响应仍无法解析成 JSON，Provider 会重试一次 `json_object`，同时把 Schema 加入提示；最终仍由本地 Draft Normalizer / Validator 决定是否合法。Responses endpoint 不做协议降级，任何模式都不会无限重试。
 - API Key 只放在 `Authorization` 请求头，不写入 Draft、报告、日志或仓库。
 - `.env`、`.env.*` 与 `drafts/generated/` 已加入 `.gitignore`。
 
@@ -108,3 +111,5 @@ npm run smoke:llm
 ```
 
 Smoke Test 使用“首都禁止鸽子喂食引发政治危机”的小型主题，执行真实四阶段调用与 Validator/Repair，但不会自动导入 `content/`。缺少环境变量时会在发出网络请求前清晰失败。
+
+能力较弱或推理文本较长的兼容模型可能需要显式提高 `POLITICAL_ANIMAL_LLM_TIMEOUT_MS` 与 `POLITICAL_ANIMAL_LLM_MAX_OUTPUT_TOKENS`。即使模型完成所有阶段，只要三次 Repair 后仍有格式、引用或剧情结构错误，Smoke Test 也会以失败状态保存 Draft/报告并拒绝导入；这属于预期的安全结果。

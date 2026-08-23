@@ -22,16 +22,6 @@ function valueMatchesType(value: unknown, type: StateValueType): boolean {
   return typeof value === type;
 }
 
-function visitConditions(conditions: Condition[] | undefined, visit: (condition: Extract<Condition, { field: string }>) => void): void {
-  for (const condition of conditions ?? []) {
-    if ('field' in condition) visit(condition);
-    else {
-      visitConditions(condition.all, visit);
-      visitConditions(condition.any, visit);
-    }
-  }
-}
-
 function duplicateValues(values: string[]): string[] {
   return [...new Set(values.filter((value, index) => values.indexOf(value) !== index))];
 }
@@ -96,6 +86,32 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
       if (['contains', 'not_contains'].includes(condition.operator) && type !== 'string[]') report('invalid_contains_condition', conditionPath, `contains 用于非 string[] 字段：${condition.field}`);
     }
   };
+  const checkConditionList = (conditions: unknown, conditionPath: string): void => {
+    if (conditions === undefined) return;
+    if (!Array.isArray(conditions)) {
+      report('invalid_condition_container', conditionPath, 'Condition 容器必须是数组');
+      return;
+    }
+    for (const [index, condition] of conditions.entries()) {
+      const path = `${conditionPath}.${index}`;
+      if (!condition || typeof condition !== 'object' || Array.isArray(condition)) {
+        report('invalid_condition', path, 'Condition 必须是对象');
+        continue;
+      }
+      if ('field' in condition) {
+        if (typeof condition.field !== 'string') report('invalid_condition', path, 'Condition field 必须是字符串');
+        else checkCondition(condition as Extract<Condition, { field: string }>, path);
+        continue;
+      }
+      const composite = condition as { all?: unknown; any?: unknown };
+      if (!('all' in composite) && !('any' in composite)) {
+        report('invalid_condition', path, 'Condition 必须包含 field、all 或 any');
+        continue;
+      }
+      if ('all' in composite) checkConditionList(composite.all, `${path}.all`);
+      if ('any' in composite) checkConditionList(composite.any, `${path}.any`);
+    }
+  };
   for (const event of bundle.events) {
     const path = `events.${event.id}`;
     if (!eventTypes.has(event.type)) report('unknown_event_type', `${path}.type`, `未知 event type：${event.type}`);
@@ -121,15 +137,15 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
     }
     for (const reference of duplicateValues(dependencies)) report('duplicate_event_reference', path, `重复事件引用：${reference}`);
 
-    visitConditions(event.requirements, (condition) => checkCondition(condition, `${path}.requirements`));
-    visitConditions(event.blockers, (condition) => checkCondition(condition, `${path}.blockers`));
+    checkConditionList(event.requirements, `${path}.requirements`);
+    checkConditionList(event.blockers, `${path}.blockers`);
     for (const field of event.urgencyFields ?? []) {
       if (!stateFields.has(field)) report('unknown_urgency_field', `${path}.urgencyFields`, `未知 urgency 字段：${field}`);
       else if (bundle.scenario.stateSchema[field] !== 'number') report('non_numeric_urgency_field', `${path}.urgencyFields`, `urgency 字段必须是 number：${field}`);
     }
     for (const choice of event.choices) {
       const choicePath = `${path}.choices.${choice.id}`;
-      visitConditions(choice.requirements, (condition) => checkCondition(condition, `${choicePath}.requirements`));
+      checkConditionList(choice.requirements, `${choicePath}.requirements`);
       for (const effect of choice.effects) {
         if (!effectOperations.has(effect.operation)) report('unknown_effect_operation', `${choicePath}.effects`, `未知 Effect operation：${effect.operation}`);
         if (!stateFields.has(effect.field)) report('unknown_effect_field', `${choicePath}.effects`, `未知 Effect 字段：${effect.field}`);
@@ -200,7 +216,7 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
     if (framing.source.institutionId && !institutionIds.includes(framing.source.institutionId)) report('unknown_framing_institution', `${path}.source.institutionId`, `Framing 引用未知 institution：${framing.source.institutionId}`);
     for (const id of duplicateValues(framing.choiceIds ?? [])) report('duplicate_framing_choice_reference', `${path}.choiceIds`, `Framing 重复引用 choice：${id}`);
     for (const id of framing.choiceIds ?? []) if (event && !event.choices.some((choice) => choice.id === id)) report('unknown_framing_choice', `${path}.choiceIds`, `Framing 引用未知 choice：${id}`);
-    visitConditions(framing.requirements, (condition) => checkCondition(condition, `${path}.requirements`));
+    checkConditionList(framing.requirements, `${path}.requirements`);
     checkTemplate(framing.eyebrow, `${path}.eyebrow`);
     checkTemplate(framing.title, `${path}.title`);
     checkTemplate(framing.body, `${path}.body`);
@@ -208,7 +224,7 @@ export function validateScenarioBundle(bundle: ScenarioBundle): ContentIssue[] {
   }
   for (const [index, evaluation] of (bundle.scenario.historyEvaluations ?? []).entries()) {
     const path = `scenario.historyEvaluations.${index}`;
-    visitConditions(evaluation.requirements, (condition) => checkCondition(condition, `${path}.requirements`));
+    checkConditionList(evaluation.requirements, `${path}.requirements`);
     checkTemplate(evaluation.text, `${path}.text`);
   }
 

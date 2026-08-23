@@ -54,6 +54,30 @@ function requiredArray(source: Record<string, unknown>, key: string, path: strin
   return value;
 }
 
+function optionalArray(source: Record<string, unknown>, key: string, path: string, problems: string[]): unknown[] | undefined {
+  const value = source[key];
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) {
+    problems.push(`${path}.${key} 必须是数组`);
+    return [];
+  }
+  return value;
+}
+
+function optionalStringArray(source: Record<string, unknown>, key: string, path: string, problems: string[]): string[] | undefined {
+  const value = optionalArray(source, key, path, problems);
+  if (!value) return undefined;
+  if (value.some((item) => typeof item !== 'string')) problems.push(`${path}.${key} 的每一项都必须是字符串`);
+  return value.filter((item): item is string => typeof item === 'string');
+}
+
+function optionalRecordArray(source: Record<string, unknown>, key: string, path: string, problems: string[]): Record<string, unknown>[] | undefined {
+  const value = optionalArray(source, key, path, problems);
+  if (!value) return undefined;
+  if (value.some((item) => !isRecord(item))) problems.push(`${path}.${key} 的每一项都必须是对象`);
+  return value.filter(isRecord);
+}
+
 function normalizeActor(value: unknown, index: number, problems: string[]): Actor {
   const path = `actors[${index}]`;
   if (!isRecord(value)) problems.push(`${path} 必须是对象`);
@@ -87,13 +111,22 @@ function normalizeChoice(value: unknown, eventIndex: number, choiceIndex: number
   const path = `events[${eventIndex}].choices[${choiceIndex}]`;
   if (!isRecord(value)) problems.push(`${path} 必须是对象`);
   const source = isRecord(value) ? value : {};
+  const effects = optionalRecordArray(source, 'effects', path, problems) ?? [];
+  const requirements = optionalRecordArray(source, 'requirements', path, problems);
+  const memories = optionalRecordArray(source, 'memories', path, problems);
+  const debts = optionalRecordArray(source, 'debts', path, problems);
+  const debtActions = optionalRecordArray(source, 'debtActions', path, problems);
   return {
     ...source,
     id: requiredString(source, 'id', path, problems),
     label: requiredString(source, 'label', path, problems),
     response: requiredString(source, 'response', path, problems),
-    effects: Array.isArray(source.effects) ? source.effects : [],
-  } as Choice;
+    effects,
+    requirements,
+    memories,
+    debts,
+    debtActions,
+  } as unknown as Choice;
 }
 
 function normalizeEvent(value: unknown, index: number, problems: string[]): GameEvent {
@@ -102,6 +135,13 @@ function normalizeEvent(value: unknown, index: number, problems: string[]): Game
   const source = isRecord(value) ? value : {};
   const choices = requiredArray(source, 'choices', path, problems)
     .map((choice, choiceIndex) => normalizeChoice(choice, index, choiceIndex, problems));
+  const after = optionalStringArray(source, 'after', path, problems);
+  const afterAny = optionalStringArray(source, 'afterAny', path, problems);
+  const requirements = optionalRecordArray(source, 'requirements', path, problems);
+  const blockers = optionalRecordArray(source, 'blockers', path, problems);
+  const debtTopics = optionalStringArray(source, 'debtTopics', path, problems);
+  const memoryTopics = optionalStringArray(source, 'memoryTopics', path, problems);
+  const urgencyFields = optionalStringArray(source, 'urgencyFields', path, problems);
   return {
     ...source,
     id: requiredString(source, 'id', path, problems),
@@ -115,8 +155,15 @@ function normalizeEvent(value: unknown, index: number, problems: string[]): Game
     actorId: requiredString(source, 'actorId', path, problems),
     institutionId: requiredString(source, 'institutionId', path, problems),
     scene: requiredString(source, 'scene', path, problems),
+    after,
+    afterAny,
+    requirements,
+    blockers,
+    debtTopics,
+    memoryTopics,
+    urgencyFields,
     choices,
-  } as GameEvent;
+  } as unknown as GameEvent;
 }
 
 function normalizeFraming(value: unknown, index: number, problems: string[]): NarrativeFraming {
@@ -124,6 +171,8 @@ function normalizeFraming(value: unknown, index: number, problems: string[]): Na
   if (!isRecord(value)) problems.push(`${path} 必须是对象`);
   const source = isRecord(value) ? value : {};
   if (!isRecord(source.source)) problems.push(`${path}.source 必须是对象`);
+  const choiceIds = optionalStringArray(source, 'choiceIds', path, problems);
+  const requirements = optionalRecordArray(source, 'requirements', path, problems);
   return {
     ...source,
     id: requiredString(source, 'id', path, problems),
@@ -131,9 +180,11 @@ function normalizeFraming(value: unknown, index: number, problems: string[]): Na
     type: requiredString(source, 'type', path, problems),
     stance: requiredString(source, 'stance', path, problems),
     source: isRecord(source.source) ? source.source : {},
+    choiceIds,
+    requirements,
     title: requiredString(source, 'title', path, problems),
     body: requiredString(source, 'body', path, problems),
-  } as NarrativeFraming;
+  } as unknown as NarrativeFraming;
 }
 
 export function normalizeAiDraft(input: unknown): NormalizedAiDraft {
@@ -160,6 +211,7 @@ export function normalizeAiDraft(input: unknown): NormalizedAiDraft {
     phases,
     stateSchema,
     initialState,
+    historyEvaluations: optionalRecordArray(source, 'historyEvaluations', 'scenario', problems),
   } as Scenario;
 
   const directory = typeof input.contentDirectory === 'string' && input.contentDirectory

@@ -140,6 +140,14 @@ describe('AI content pipeline', () => {
     expect(normalized.bundle.events[0]).toMatchObject({ weight: 1, once: true });
   });
 
+  it('rejects malformed optional AI arrays before they can crash validation', () => {
+    const broken = structuredClone(energyDraft);
+    broken.events[0].requirements = { field: 'grid_stability', operator: '>=', value: 1 } as never;
+    (broken.events[0].choices[0] as unknown as { effects: unknown }).effects = { field: 'grid_stability', operation: 'increment', value: 1 };
+    expect(() => normalizeAiDraft(broken)).toThrow(/requirements 必须是数组/);
+    expect(() => normalizeAiDraft(broken)).toThrow(/effects 必须是数组/);
+  });
+
   it('imports a small playable scenario with three formal endings', () => {
     const bundle = getScenarioBundle('energy_crisis');
     expect(bundle.events).toHaveLength(8);
@@ -166,5 +174,14 @@ describe('AI content pipeline', () => {
       'missing_ending',
       'unreachable_ending_phase',
     ]));
+  });
+
+  it('reports malformed AI condition containers instead of throwing', () => {
+    const broken = structuredClone(getScenarioBundle('energy_crisis'));
+    broken.events[0].requirements = { field: 'grid_stability', operator: '>=', value: 1 } as never;
+    broken.events[1].requirements = [{ all: { field: 'public_anger', operator: '>=', value: 2 } as never }];
+    expect(() => validateScenarioBundle(broken)).not.toThrow();
+    const codes = validateScenarioBundle(broken).map((issue) => issue.code);
+    expect(codes).toContain('invalid_condition_container');
   });
 });
