@@ -60,6 +60,19 @@ Original prompt: 请参考 Political_Animal_Game_Design_v0.1.md，进行项目�
 - 《狐狸共和国能源危机》完全由 `drafts/energy-crisis.ai-draft.json` 经 Importer 生成：8 个事件、4 阶段、5 个 Framing、3 个 ending。
 - Importer 失败安全实测：含未知 actor、未知 state 模板与缺失 ending 的 Draft 一次报告 4 个问题，目标目录未创建；有效 Draft 的标准化结果与正式目录逐字段一致。
 - Stage 4 浏览器验收完成：能源危机 Demo 从开场完整进入 ending，五个事件后 Framing 均可正常阅读并回到调度；结局后无刷新返回三剧本首页，控制台无错误或警告。
+- Stage 5：新增独立 OpenAI-compatible Provider，URL/Key/Model/timeout 全部从环境读取；同时支持 Chat Completions 与 `/responses` endpoint 的 JSON Schema 输出包。
+- 实现 Planner → Structure → Content → Critic → Validator 分阶段生成；每阶段读取前序 JSON，模型仅返回数据且没有项目源码或文件工具。
+- Validator 失败后最多执行 3 次 Repair，报告保留 Planner、Structure、Content、Critic 摘要及每轮错误/修复；最终失败 Draft 不调用 Importer。
+- 新增 `generate-scenario` CLI、可选 `--import` 与独立 `smoke:llm` 真实 API 测试入口；缺少 Provider 环境配置时会在网络请求前退出。
+- 新增 8 Event fixture 覆盖无网络完整生成、成功 Repair、三次失败上限及两种兼容 API 请求格式。
+- Stage 5 第一轮回归：生产构建、41 项 Vitest、14 项内容校验通过；三个现有剧本各 10,000 Seed 完成性测试保持通过。
+- Playwright 检查三剧本选择首页与教育剧本首事件，截图和 `render_game_to_text` 一致，未发现新增控制台错误。
+- Stage 5 最终复验：Stage 4 Importer 在临时目录成功拆分能源 Draft；生产构建、41 项测试、14 项内容校验与差异检查再次通过，仓库未发现真实 API 密钥。
+- Agnes 真实 API 兼容性测试：`agnes-2.5-flash` 可完成 JSON Schema Planner 但 Structure 超过 180 秒；`agnes-2.5-pro` 明确拒绝 JSON Schema、接受 JSON Object，因此 Provider 增加仅针对 Chat HTTP 400/422 的单次协议降级，Schema 同步放入提示且最终仍由本地 Validator 把关。
+- Agnes Pro 首次降级测试没有返回最终 content，Provider 因此补充可配置输出预算：默认 16384，Chat / Responses 分别映射到 `max_tokens` / `max_output_tokens`，并在缺失 content 时仅报告 finish reason 与响应字段名。
+- Agnes Flash 在延长上限后返回了非合法 JSON，Provider 将同一单次 JSON Object 降级扩展到“HTTP 200 但输出不可解析”的 Chat 情况；Responses 不降级且所有路径最多重试一次。
+- Agnes `2.5-flash` 最终完成 Planner / Structure / Content / Critic 与三次 Repair，生成 8 Event / 5 Framing Draft；问题数 88 → 82 → 82 → 5，失败 Draft 与报告落在被忽略的 `drafts/generated/`，密钥扫描通过且未创建正式 content。剩余来源与归属错误不适合自动猜测，安全失败符合预期。
+- Agnes `2.5-pro` 可通过 JSON Object 降级完成前三阶段，但 Critic 被服务端以余额不足拒绝；该密钥下 Pro 通道并非实际不限量，因此未继续消耗额度。
 
 ## TODO
 
